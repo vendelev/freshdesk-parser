@@ -69,12 +69,6 @@ final readonly class ParseTask
             throw new \RuntimeException(sprintf('Directory "%s" was not created', $directory));
         }
 
-        // Сохранение каждой задачи в отдельный файл
-        foreach ($tasks as $task) {
-            if (isset($task['id'])) {
-                $filename = "$directory/{$task['id']}.json";
-                file_put_contents($filename, json_encode($task, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-            }
-        }
+        file_put_contents("$directory/tasks.json", json_encode($tasks, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
     }
 }
