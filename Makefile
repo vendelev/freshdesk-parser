@@ -53,3 +53,6 @@ php-cli:
 
 php-log:
 	${DOCKER_COMPOSE} logs php-dev
+
+php-run:
+	${DOCKER_COMPOSE} exec php-dev php $(cmd)
