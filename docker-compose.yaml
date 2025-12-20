@@ -4,10 +4,22 @@ services:
     restart: unless-stopped
     build:
       context: docker
-      dockerfile: Dockerfile
+      dockerfile: Php.Dockerfile
       args:
         - UID=${UID}
         - GID=${GID}
     volumes:
       - ./backend:/var/www/backend/
       - ./backend/storage/temp/phpunit:/opt/phpstorm-coverage
+
+  node-spec:
+    container_name: ${COMPOSE_PROJECT_NAME}-node
+    restart: unless-stopped
+    build:
+      context: docker
+      dockerfile: Node.Dockerfile
+      args:
+        - UID=${UID}
+        - GID=${GID}
+    volumes:
+      - ./:/var/www/

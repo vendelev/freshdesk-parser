@@ -48,6 +48,13 @@ RUN <<EOF
   mv "${PHP_INI_DIR}/php.ini-development" "${PHP_INI_DIR}/php.ini"
 EOF
 
+RUN <<EOF
+  set -e
+  apt-get update
+  apt install npm
+  npm install -g @fission-ai/openspec@latest
+EOF
+
 USER www-data
 
 WORKDIR /var/www/backend
