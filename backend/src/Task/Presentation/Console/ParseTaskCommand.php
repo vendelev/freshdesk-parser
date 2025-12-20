@@ -6,6 +6,7 @@ namespace Parser\Task\Presentation\Console;
 
 use Illuminate\Console\Command;
 use Parser\Task\Application\UseCase\ParseTask;
+use Parser\Task\Domain\Request\GetTasksRequest;
 use Parser\Task\Domain\Request\ParseTaskRequest;
 
 /**
@@ -13,7 +14,7 @@ use Parser\Task\Domain\Request\ParseTaskRequest;
  */
 final class ParseTaskCommand extends Command
 {
-    protected $signature = 'task:parse';
+    protected $signature = 'task:parse {--updated-since=} {--per-page=100} {--page=1}';
     protected $description = 'Parse tasks from Freshdesk';
 
     public function handle(ParseTask $parseTask): void
@@ -21,6 +22,15 @@ final class ParseTaskCommand extends Command
         $request = new ParseTaskRequest();
         $parseTask->run($request);
         
-        $this->info('ok');
+        // Получение списка задач
+        $getTasksRequest = new GetTasksRequest(
+            $this->option('updated-since'),
+            (int) $this->option('per-page'),
+            (int) $this->option('page')
+        );
+        
+        $tasks = $parseTask->getTasks($getTasksRequest);
+        
+        $this->info("Successfully fetched and saved " . count($tasks) . " tasks.");
     }
 }
