@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Parser\Task\Domain\Validation;
 
-use Parser\Task\Domain\Validation\TaskRequiredFieldsValidator;
-use Parser\Task\Domain\Validation\TaskDataFormatValidator;
+use Illuminate\Support\Facades\Validator as ValidatorFacade;
 
 /**
  * @final
@@ -13,30 +12,32 @@ use Parser\Task\Domain\Validation\TaskDataFormatValidator;
  */
 final readonly class TaskValidator
 {
-    public function __construct(
-        private TaskRequiredFieldsValidator $requiredFieldsValidator,
-        private TaskDataFormatValidator $dataFormatValidator,
-    ) {
-    }
-
     /**
      * @param array<string, mixed> $task
      * @return array<string>
      */
     public function validate(array $task): array
     {
-        $errors = [];
+        $rules = [
+            'id' => 'required|numeric',
+            'subject' => 'required|string',
+            'description' => 'required|string',
+            'status' => 'required|string',
+            'priority' => 'required|numeric',
+            'created_at' => 'required|date',
+        ];
 
-        // Проверка обязательных полей
-        $requiredFieldErrors = $this->requiredFieldsValidator->validate($task);
-        if (!empty($requiredFieldErrors)) {
-            $errors = array_merge($errors, $requiredFieldErrors);
+        $validator = ValidatorFacade::make($task, $rules);
+
+        if ($validator->passes()) {
+            return [];
         }
 
-        // Проверка формата данных
-        $dataFormatErrors = $this->dataFormatValidator->validate($task);
-        if (!empty($dataFormatErrors)) {
-            $errors = array_merge($errors, $dataFormatErrors);
+        $errors = [];
+        foreach ($validator->errors()->toArray() as $field => $messages) {
+            foreach ($messages as $message) {
+                $errors[] = "{$field}: {$message}";
+            }
         }
 
         return $errors;

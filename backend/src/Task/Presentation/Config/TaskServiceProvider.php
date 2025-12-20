@@ -10,8 +10,6 @@ use Parser\Task\Application\UseCase\ImportTasksFromJson;
 use Parser\Task\Domain\TaskParserInterface;
 use Parser\Task\Domain\JsonFileReaderInterface;
 use Parser\Task\Domain\Validation\TaskValidator;
-use Parser\Task\Domain\Validation\TaskRequiredFieldsValidator;
-use Parser\Task\Domain\Validation\TaskDataFormatValidator;
 use Parser\Task\Infrastructure\Adapter\FreshdeskTaskParserAdapter;
 use Parser\Task\Infrastructure\Adapter\FileSystemJsonFileReaderAdapter;
 use Parser\Task\Presentation\Console\ParseTaskCommand;
@@ -45,8 +43,6 @@ final class TaskServiceProvider extends ServiceProvider
         );
 
         // Register Validation classes
-        $this->app->singleton(TaskRequiredFieldsValidator::class);
-        $this->app->singleton(TaskDataFormatValidator::class);
         $this->app->singleton(TaskValidator::class);
 
         // Register UseCases
