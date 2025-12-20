@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Parser\Task\Presentation\Config;
 
 use Illuminate\Support\ServiceProvider;
+use Parser\Task\Application\Service\LoadTicketDetailsService;
 use Parser\Task\Application\Service\ParseTasksService;
 use Parser\Task\Application\Service\TaskStorageService;
 use Parser\Task\Domain\FreshdeskClientInterface;
 use Parser\Task\Infrastructure\Adapter\FreshdeskHttpAdapter;
+use Parser\Task\Presentation\Console\LoadTicketDetailsCommand;
 use Parser\Task\Presentation\Console\ParseFreshdeskCommand;
 
 final class TaskServiceProvider extends ServiceProvider
@@ -49,6 +51,20 @@ final class TaskServiceProvider extends ServiceProvider
             ->give(TaskStorageService::class);
 
         $this->app->singleton(ParseTasksService::class);
+
+        $this->app->when(LoadTicketDetailsService::class)
+            ->needs('$freshdeskClient')
+            ->give(FreshdeskClientInterface::class);
+
+        $this->app->when(LoadTicketDetailsService::class)
+            ->needs('$filesystem')
+            ->give('files');
+
+        $this->app->when(LoadTicketDetailsService::class)
+            ->needs('$basePath')
+            ->give('freshdesk');
+
+        $this->app->singleton(LoadTicketDetailsService::class);
     }
 
     public function boot(): void
@@ -56,6 +72,7 @@ final class TaskServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 ParseFreshdeskCommand::class,
+                LoadTicketDetailsCommand::class,
             ]);
         }
     }

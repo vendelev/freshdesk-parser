@@ -35,7 +35,7 @@ final class TaskStorageService
         $filename = "{$day}_{$time}.json";
         $filepath = "{$directory}/{$filename}";
 
-        $json = json_encode(['tasks' => $tickets], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        $json = json_encode($tickets, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 
         if ($json === false) {
             throw new \RuntimeException('Failed to encode tasks to JSON');

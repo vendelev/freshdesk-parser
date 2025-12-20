@@ -12,4 +12,11 @@ interface FreshdeskClientInterface
      * @return array<string, mixed>
      */
     public function getAllTickets(int $page = 1, int $perPage = 100): array;
+
+    /**
+     * Получить детали конкретной заявки по ID.
+     *
+     * @return array<string, mixed>
+     */
+    public function getTicket(int $ticketId): array;
 }

@@ -28,38 +28,17 @@ final class ParseTasksService
         while (true) {
             $response = $this->freshdeskClient->getAllTickets($page, 100);
 
-            if (empty($response['tickets'])) {
+            if (empty($response)) {
                 break;
             }
 
-            $allTickets = array_merge($allTickets, $response['tickets']);
+            $this->storageService->save($response, new DateTimeImmutable());
 
-            if (!isset($response['_links']['next'])) {
-                break;
-            }
-
+            sleep(1);
             ++$page;
         }
 
-        foreach ($allTickets as $ticket) {
-            $task = new Task(
-                freshdeskId: (int) $ticket['id'],
-                subject: $ticket['subject'] ?? '',
-                description: $ticket['description'] ?? '',
-                status: $ticket['status'] ?? '',
-                priority: (string) ($ticket['priority'] ?? ''),
-                requesterId: (int) ($ticket['requester_id'] ?? 0),
-                type: $ticket['type'] ?? '',
-                source: (string) ($ticket['source'] ?? ''),
-                customFields: $ticket['custom_fields'] ?? [],
-            );
-
-            $tasks[] = $task;
-        }
-
-        $response = new TaskListResponse($tasks);
-
-        $this->storageService->save($allTickets, new DateTimeImmutable());
+        $response = new TaskListResponse([]);
 
         return $response;
     }

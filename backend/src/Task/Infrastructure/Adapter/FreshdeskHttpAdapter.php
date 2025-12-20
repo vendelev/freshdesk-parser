@@ -46,4 +46,19 @@ final class FreshdeskHttpAdapter implements FreshdeskClientInterface
 
         return $data;
     }
+
+    /**
+     * @return array<string, mixed>
+     *
+     * @throws GuzzleException
+     */
+    public function getTicket(int $ticketId): array
+    {
+        $response = $this->client->get("tickets/{$ticketId}");
+
+        $content = $response->getBody()->getContents();
+        $data = json_decode($content, true, flags: JSON_THROW_ON_ERROR);
+
+        return $data;
+    }
 }
