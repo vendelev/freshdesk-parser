@@ -20,28 +20,28 @@ final class ImportJsonTaskCommand extends Command
 
     public function handle(ImportTasksFromJson $importTasksFromJsonUseCase): int
     {
-        $path = $this->option('path') ?? 'backend/storage/freshdesk/';
-        
+        $path = $this->option('path') ?? 'storage/freshdesk/';
+
         $this->info("Начало импорта заявок из JSON файлов в директории: {$path}");
         Log::info('Начало выполнения команды ImportJsonTaskCommand', ['path' => $path]);
-        
+
         try {
             // Создание запроса для UseCase
             $request = new ImportTasksFromJsonRequest($path);
-            
+
             // Вызов UseCase для обработки импорта
             $response = $importTasksFromJsonUseCase->run($request);
-            
+
             // Вывод статистики выполнения
             $this->outputStatistics($response);
-            
+
             Log::info('Команда ImportJsonTaskCommand успешно выполнена', [
                 'total' => $response->totalTasks,
                 'successful' => $response->successfulTasks,
                 'errors' => $response->errorTasks,
                 'duplicates' => $response->duplicateTasks
             ]);
-            
+
             return Command::SUCCESS;
         } catch (RuntimeException $e) {
             $this->error('Ошибка при обработке JSON файлов: ' . $e->getMessage());
@@ -53,7 +53,7 @@ final class ImportJsonTaskCommand extends Command
             return Command::FAILURE;
         }
     }
-    
+
     private function outputStatistics($response): void
     {
         $this->info("=== Статистика обработки заявок ===");
