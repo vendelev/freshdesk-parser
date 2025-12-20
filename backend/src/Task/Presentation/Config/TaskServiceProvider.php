@@ -15,29 +15,40 @@ final class TaskServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->mergeConfigFrom(__DIR__ . '/freshdesk.php', 'freshdesk');
+
+        $this->app->when(FreshdeskHttpAdapter::class)
+            ->needs('$apiKey')
+            ->giveConfig('freshdesk.api_key');
+
+        $this->app->when(FreshdeskHttpAdapter::class)
+            ->needs('$domain')
+            ->giveConfig('freshdesk.domain');
+
         $this->app->singleton(
             FreshdeskClientInterface::class,
-            static fn () => new FreshdeskHttpAdapter(
-                apiKey: (string) config('freshdesk.api_key'),
-                domain: (string) config('freshdesk.domain'),
-            ),
+            FreshdeskHttpAdapter::class,
         );
 
-        $this->app->singleton(
-            TaskStorageService::class,
-            static fn ($app) => new TaskStorageService(
-                filesystem: $app->make('files'),
-                basePath: 'freshdesk',
-            ),
-        );
+        $this->app->when(TaskStorageService::class)
+            ->needs('$filesystem')
+            ->give('files');
 
-        $this->app->singleton(
-            ParseTasksService::class,
-            static fn ($app) => new ParseTasksService(
-                freshdeskClient: $app->make(FreshdeskClientInterface::class),
-                storageService: $app->make(TaskStorageService::class),
-            ),
-        );
+        $this->app->when(TaskStorageService::class)
+            ->needs('$basePath')
+            ->give('freshdesk');
+
+        $this->app->singleton(TaskStorageService::class);
+
+        $this->app->when(ParseTasksService::class)
+            ->needs('$freshdeskClient')
+            ->give(FreshdeskClientInterface::class);
+
+        $this->app->when(ParseTasksService::class)
+            ->needs('$storageService')
+            ->give(TaskStorageService::class);
+
+        $this->app->singleton(ParseTasksService::class);
     }
 
     public function boot(): void
