@@ -17,6 +17,7 @@ help:
 	$(TAB) make php-test - Выполнить все PHP проверки.
 	$(TAB) make php-cli - Bash PHP контейнера.
 	$(TAB) make php-log - Логи PHP контейнера.
+	$(TAB) make php-run ARGS="..." - Выполнить PHP команду в контейнере.
 
 install:
 	[ -f .env ] || cp .env.example .env
@@ -53,3 +54,6 @@ php-cli:
 
 php-log:
 	${DOCKER_COMPOSE} logs php-dev
+
+php-run:
+	${DOCKER_COMPOSE} exec php-dev php $(ARGS)
