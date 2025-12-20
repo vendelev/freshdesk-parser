@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Parser\Task\Presentation\Config\TaskServiceProvider;
+
 return [
-    \Parser\Task\Presentation\Config\TaskServiceProvider::class,
+    TaskServiceProvider::class,
 ];

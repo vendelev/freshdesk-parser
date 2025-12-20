@@ -9,6 +9,7 @@ use Parser\Task\Application\Service\TaskParser;
 use Parser\Task\Application\UseCase\ParseTask;
 use Parser\Task\Domain\TaskParserInterface;
 use Parser\Task\Infrastructure\Adapter\FreshdeskTaskParserAdapter;
+use Parser\Task\Presentation\Console\ParseTaskCommand;
 
 /**
  * @final
@@ -30,7 +31,7 @@ final class TaskServiceProvider extends ServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->commands([
-                \Parser\Task\Presentation\Console\ParseTaskCommand::class,
+                ParseTaskCommand::class,
             ]);
         }
     }
