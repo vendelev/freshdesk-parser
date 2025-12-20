@@ -13,8 +13,10 @@ use Parser\Task\Domain\TaskParserInterface;
  */
 final readonly class FreshdeskTaskParserAdapter implements TaskParserInterface
 {
-    public function __construct()
-    {
+    public function __construct(
+        private string $freshdeskApiKey,
+        private string $freshdeskDomain,
+    ) {
     }
 
     public function parse(string $data): array
@@ -29,12 +31,8 @@ final readonly class FreshdeskTaskParserAdapter implements TaskParserInterface
     public function getTasks(GetTasksRequest $request): array
     {
         // Получение списка задач из Freshdesk
-        $apiKey = env('FRESHDESK_API_KEY');
-        $domain = env('FRESHDESK_DOMAIN');
-        
-        if (!$apiKey || !$domain) {
-            throw new \InvalidArgumentException('FRESHDESK_API_KEY and FRESHDESK_DOMAIN must be set in .env file');
-        }
+        $apiKey = $this->freshdeskApiKey;
+        $domain = $this->freshdeskDomain;
         
         $url = "https://{$domain}.freshdesk.com/api/v2/tickets";
         

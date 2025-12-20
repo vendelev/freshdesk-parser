@@ -25,7 +25,7 @@ final readonly class ParseTask
         // Бизнес-логика парсинга задач
         // Используем $this->taskParser для парсинга данных
     }
-    
+
     /**
      * @param GetTasksRequest $request
      * @return array<array<string, mixed>>
@@ -35,10 +35,10 @@ final readonly class ParseTask
         try {
             // Получение списка задач через адаптер
             $tasks = $this->taskParser->getTasks($request);
-            
+
             // Сохранение задач в файлы
             $this->saveTasksToFile($tasks);
-            
+
             return $tasks;
         } catch (\Exception $e) {
             // Логирование ошибок
@@ -46,11 +46,11 @@ final readonly class ParseTask
                 'exception' => $e,
                 'request' => $request,
             ]);
-            
+
             throw $e;
         }
     }
-    
+
     /**
      * @param array<array<string, mixed>> $tasks
      */
@@ -59,16 +59,16 @@ final readonly class ParseTask
         if (empty($tasks)) {
             return;
         }
-        
+
         // Создание директории если не существует
         $year = date('Y');
         $month = date('m');
         $directory = storage_path("freshdesk/$year/$month");
-        
-        if (!is_dir($directory)) {
-            mkdir($directory, 0755, true);
+
+        if (!is_dir($directory) && !mkdir($directory, 0755, true) && !is_dir($directory)) {
+            throw new \RuntimeException(sprintf('Directory "%s" was not created', $directory));
         }
-        
+
         // Сохранение каждой задачи в отдельный файл
         foreach ($tasks as $task) {
             if (isset($task['id'])) {
