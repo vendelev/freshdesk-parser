@@ -33,12 +33,12 @@ This project implements a REST API service that parses data from Freshdesk, foll
 
 Each layer can only use lower layers:
 
-| Layer | Can Use |
-|-------|---------|
-| **Presentation** | Infrastructure, Application, Domain (own module and others) |
-| **Infrastructure** | Application, Domain (own and other modules) |
-| **Application** | Domain (preferably only own module) |
-| **Domain** | Domain (own and other modules) |
+| Слой | Может использовать                                                   |
+|------|----------------------------------------------------------------------|
+| **Presentation** | Infrastructure (только своего модуля), Application (только своего модуля), Domain (своего модуля и чужих)          |
+| **Infrastructure** | Application (только своего модуля), Domain (своего и чужих модулей)                         |
+| **Application** | Application (только своего модуля), Domain (предпочтительно только своего модуля) |
+| **Domain** | Domain (своего и чужих модулей)                                      |
 
 ### Module Structure
 
