@@ -18,6 +18,7 @@ help:
 	$(TAB) make php-cli - Bash PHP контейнера.
 	$(TAB) make php-log - Логи PHP контейнера.
 	$(TAB) make php-run CMD="..." - Выполнить команду в PHP контейнере.
+	$(TAB) make openspec-run CMD="..." - Выполнить команду в OpenSpec контейнере.
 
 install:
 	[ -f .env ] || cp .env.example .env
@@ -57,3 +58,6 @@ php-log:
 
 php-run:
 	${DOCKER_COMPOSE} exec php-dev $(CMD)
+
+openspec-run:
+	${DOCKER_COMPOSE} exec node-spec $(CMD)
