@@ -13,12 +13,12 @@ alwaysApply: true
 
 Вместо:
 ```php
-$response = new \App\Modules\Task\Domain\Response\TaskResponse();
+$response = new \Parser\Task\Domain\Response\TaskResponse();
 ```
 
 Используйте:
 ```php
-use App\Modules\Task\Domain\Response\TaskResponse;
+use Parser\Task\Domain\Response\TaskResponse;
 
 // ...
 
@@ -29,3 +29,29 @@ $response = new TaskResponse();
 
 - Не добавляйте оператор `use` для встроенных типов PHP (int, string, bool, array, etc.)
 - Не добавляйте оператор `use` для классов в том же namespace
+
+## Регистрация интерфейсов и реализаций
+
+Для связи интерфейсов и их реализаций в контейнере зависимостей Laravel используйте метод `bind`:
+
+```php
+$this->app->bind(Interface::class, Implementation::class);
+```
+
+Это позволяет легко заменять реализации в тестах и соблюдает принцип инверсии зависимостей.
+
+## Комментарии в коде
+
+Все комментарии в коде должны быть написаны на русском языке.
+
+### Пример
+
+```php
+// Получить список задач из Freshdesk
+$tasks = $this->freshdeskClient->getTasks();
+```
+
+### Исключения
+
+- Комментарии в формате PHPDoc могут содержать английские термины, относящиеся к коду (например, @param, @return, @throws)
+- Названия классов, методов и переменных в комментариях должны сохранять оригинальное написание

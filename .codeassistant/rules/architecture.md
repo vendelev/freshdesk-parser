@@ -189,7 +189,7 @@ Patient/
 
 **Внедрение зависимостей (DI):**
 
-- Для использования Infrastructure реализации в Application слое обязательно создайте интерфейс в Domain.
+- Не требуется создавать интерфейс, если существует одна реализация. НО для использования Infrastructure-реализации в Application слое обязательно создайте интерфейс в Domain.
 - Пример: Application использует `AuthenticationRepositoryInterface` (определена в Domain), которую реализует `DatabaseAuthenticationRepository` (в Infrastructure).
 
 ## Зависимости между модулями
