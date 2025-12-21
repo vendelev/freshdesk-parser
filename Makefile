@@ -17,6 +17,7 @@ help:
 	$(TAB) make php-test - Выполнить все PHP проверки.
 	$(TAB) make php-cli - Bash PHP контейнера.
 	$(TAB) make php-log - Логи PHP контейнера.
+	$(TAB) make php-run CMD="..." - Выполнить команду в PHP контейнере.
 
 install:
 	[ -f .env ] || cp .env.example .env
@@ -29,7 +30,7 @@ install:
 	[ -f backend/.env.testing ] || cp backend/.env.example backend/.env.testing
 	${DOCKER_COMPOSE} exec php-dev composer install
 	${DOCKER_COMPOSE} exec php-dev php artisan key:generate
-	sed -i 's/DB_DATABASE=.*/DB_DATABASE=database_test.sqlite/' backend/.env.testing
+	sed -i 's/DB_DATABASE=.*/DB_DATABASE=database/storage/database_test.sqlite/' backend/.env.testing
 
 up:
 	${DOCKER_COMPOSE} up -d
@@ -53,3 +54,6 @@ php-cli:
 
 php-log:
 	${DOCKER_COMPOSE} logs php-dev
+
+php-run:
+	${DOCKER_COMPOSE} exec php-dev $(CMD)
