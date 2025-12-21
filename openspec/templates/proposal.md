@@ -1,68 +1,35 @@
-# Proposal: [Название изменения]
+# Change: [Описание изменения]
 
 ## Why
 
-Объясните причину изменения. Ответьте на вопросы:
-- Какая проблема решается этим изменением?
-- Почему текущее решение не подходит?
-- Какие бизнес-требования или пользовательские сценарии требуют этого изменения?
+1-2 предложения о проблеме или возможности.
 
 Пример:
 > Необходимо добавить возможность экспорта отчетов в формате Excel, так как клиенты просят выгружать данные для анализа в сторонних системах. Текущий формат CSV не поддерживает сложные структуры данных и форматирование.
 
 ## What Changes
 
-Опишите технические изменения, которые будут внесены. Используйте формат From/To для описания изменений.
-
-### From
-```
-// Текущая реализация или структура
-```
-
-### To
-```
-// Новая реализация или структура
-```
+- [Перечислить основные изменения]
+- [Отметить breaking changes как **BREAKING**]
 
 Пример:
-### From
-```
-class ReportService
-{
-    public function generateReport(array $data): string
-    {
-        return implode(',', $data);
-    }
-}
-```
-
-### To
-```
-class ReportService
-{
-    public function generateCsvReport(array $data): string
-    {
-        // Реализация генерации CSV
-    }
-    
-    public function generateExcelReport(array $data): string
-    {
-        // Реализация генерации Excel
-    }
-}
-```
+- Добавить методы `generateExcelReport()` в `ReportService`
+- Создать DTO `ExportReportRequest` для параметров экспорта
+- **BREAKING**: Изменить сигнатуру `generateReport()` (было `string`, станет `ExportResponse`)
 
 ## Impact
 
-Оцените влияние изменений на систему:
-
-- **Breaking Changes**: Опишите обратно несовместимые изменения
-- **Migration**: Опишите необходимость миграции данных или кода
-- **Dependencies**: Опишите новые зависимости
+- **Affected specs**: [перечислить затронутые capabilities]
+- **Affected code**: [ключевые файлы/модули]
+- **Breaking Changes**: Опишите обратно несовместимые изменения (если есть)
+- **Migration**: Опишите необходимость миграции данных или кода (если нужна)
+- **Dependencies**: Новые внешние библиотеки (если требуются)
 - **Performance**: Оцените влияние на производительность
 
 Пример:
+- **Affected specs**: `reporting`, `api`
+- **Affected code**: `backend/src/Reporting/`, `backend/database/migrations/`
 - **Breaking Changes**: Нет
-- **Migration**: Требуется обновить конфигурацию отчетов
-- **Dependencies**: Добавлена библиотека PhpOffice\PhpSpreadsheet
-- **Performance**: Увеличение времени генерации отчета на 20% из-за сложности формата Excel
+- **Migration**: Требуется добавить миграцию для таблицы `report_exports`
+- **Dependencies**: Добавлена библиотека `PhpOffice\PhpSpreadsheet`
+- **Performance**: Увеличение памяти на 5-10MB при обработке больших отчетов
