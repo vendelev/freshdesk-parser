@@ -5,10 +5,4 @@ use ShipMonk\ComposerDependencyAnalyser\Config\ErrorType;
 
 return new Configuration()
     ->addPathsToScan(['config'], false)
-    ->ignoreErrorsOnExtension('ext-pdo', [ErrorType::UNUSED_DEPENDENCY])
-    ->ignoreErrorsOnPackages(
-        [
-            'guzzlehttp/guzzle',
-        ],
-        [ErrorType::UNUSED_DEPENDENCY]
-    );
+    ->ignoreErrorsOnExtension('ext-pdo', [ErrorType::UNUSED_DEPENDENCY]);

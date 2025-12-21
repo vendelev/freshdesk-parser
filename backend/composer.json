@@ -8,7 +8,8 @@
         "ext-pdo": "*",
         "guzzlehttp/guzzle": "^7.10",
         "laravel/framework": "^12.43.1",
-        "monolog/monolog": "^3.9"
+        "monolog/monolog": "^3.9",
+        "psr/http-message": "^2.0"
     },
     "require-dev": {
         "driftingly/rector-laravel": "^2.1.8",
@@ -16,6 +17,7 @@
         "fakerphp/faker": "^1.24.1",
         "guzzlehttp/psr7": "^2.8",
         "larastan/larastan": "^3.8.1",
+        "mockery/mockery": "^1.6.12",
         "nunomaduro/collision": "^8.8.3",
         "phpat/phpat": "^0.12.0",
         "phpstan/extension-installer": "^1.4.3",
@@ -23,7 +25,6 @@
         "phpstan/phpstan-phpunit": "^2.0.11",
         "phpstan/phpstan-strict-rules": "^2.0.7",
         "phpunit/phpunit": "^12.5.4",
-        "psr/http-message": "^2.0",
         "rector/rector": "^2.2.14",
         "roave/security-advisories": "dev-latest",
         "shipmonk/composer-dependency-analyser": "^1.8.4",
