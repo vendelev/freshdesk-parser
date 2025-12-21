@@ -7,7 +7,9 @@ namespace Parser\Task\Application\Service;
 use Parser\Task\Domain\Exception\FreshdeskApiException;
 use Parser\Task\Domain\FreshdeskApiClientInterface;
 use Parser\Task\Domain\Request\ParseTasksRequest;
+use Parser\Task\Domain\Request\ParseSingleTaskRequest;
 use Parser\Task\Domain\Response\ParseTasksResponse;
+use Parser\Task\Domain\Response\ParseSingleTaskResponse;
 use Parser\Task\Domain\TaskParserInterface;
 use JsonException;
 
@@ -128,6 +130,52 @@ final readonly class FreshdeskTaskParser implements TaskParserInterface
             if (file_put_contents($filename, $json) === false) {
                 throw new FreshdeskApiException("Failed to save tasks to file: {$filename}");
             }
+        } catch (JsonException $e) {
+            throw FreshdeskApiException::fromJsonError($e->getMessage());
+        }
+    }
+
+    /**
+     * @throws FreshdeskApiException
+     */
+    public function parseSingle(ParseSingleTaskRequest $request): ParseSingleTaskResponse
+    {
+        $task = $this->freshdeskClient->getTask($request->taskId);
+        $filePath = $this->saveSingleTaskToFile($task, $request->taskId);
+
+        return new ParseSingleTaskResponse(
+            taskId: $request->taskId,
+            filePath: $filePath,
+            message: sprintf('Successfully parsed task #%d', $request->taskId)
+        );
+    }
+
+    /**
+     * @param array<string, mixed> $task
+     * @throws FreshdeskApiException
+     */
+    private function saveSingleTaskToFile(array $task, int $taskId): string
+    {
+        $storagePath = $this->getStoragePath();
+        $tasksDir = "{$storagePath}/freshdesk/tasks";
+
+        if (!is_dir($tasksDir) && !mkdir($tasksDir, 0755, true) && !is_dir($tasksDir)) {
+            throw new \RuntimeException(sprintf('Directory "%s" was not created', $tasksDir));
+        }
+
+        $filename = "{$tasksDir}/{$taskId}.json";
+
+        try {
+            $json = json_encode($task, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+            if ($json === false) {
+                throw new JsonException('Failed to encode task to JSON');
+            }
+
+            if (file_put_contents($filename, $json) === false) {
+                throw new FreshdeskApiException("Failed to save task to file: {$filename}");
+            }
+
+            return $filename;
         } catch (JsonException $e) {
             throw FreshdeskApiException::fromJsonError($e->getMessage());
         }

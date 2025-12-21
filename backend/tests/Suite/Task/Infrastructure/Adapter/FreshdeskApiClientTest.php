@@ -106,4 +106,78 @@ final class FreshdeskApiClientTest extends TestCase
 
         $this->freshdeskApiClient->getTasks(1, 2);
     }
+
+    /**
+     * @throws FreshdeskApiException
+     */
+    public function testGetTaskReturnsSingleTask(): void
+    {
+        $mockTask = ['id' => 123, 'title' => 'Test Task', 'description' => 'Task description'];
+
+        $stream = $this->createMock(StreamInterface::class);
+        $stream->expects($this->once())
+            ->method('__toString')
+            ->willReturn(json_encode($mockTask));
+
+        $response = $this->createMock(ResponseInterface::class);
+        $response->expects($this->once())
+            ->method('getBody')
+            ->willReturn($stream);
+
+        $this->httpClient->expects($this->once())
+            ->method('request')
+            ->with('GET', 'https://test-domain.freshdesk.com/api/v2/tickets/123')
+            ->willReturn($response);
+
+        $result = $this->freshdeskApiClient->getTask(123);
+
+        self::assertEquals($mockTask, $result);
+        self::assertSame(123, $result['id']);
+        self::assertSame('Test Task', $result['title']);
+    }
+
+    /**
+     * @throws FreshdeskApiException
+     */
+    public function testGetTaskThrowsExceptionOnHttpError(): void
+    {
+        $request = new Request('GET', 'https://test-domain.freshdesk.com/api/v2/tickets/123');
+        $response = new Response(404, [], 'Not Found');
+
+        $this->httpClient->expects($this->once())
+            ->method('request')
+            ->with('GET', 'https://test-domain.freshdesk.com/api/v2/tickets/123')
+            ->willThrowException(new RequestException('Not Found', $request, $response));
+
+        self::expectException(FreshdeskApiException::class);
+        self::expectExceptionMessage('Freshdesk API error (404): Not Found');
+
+        $this->freshdeskApiClient->getTask(123);
+    }
+
+    /**
+     * @throws FreshdeskApiException
+     */
+    public function testGetTaskThrowsExceptionOnJsonError(): void
+    {
+        $stream = $this->createMock(StreamInterface::class);
+        $stream->expects($this->once())
+            ->method('__toString')
+            ->willReturn('{ invalid json }');
+
+        $response = $this->createMock(ResponseInterface::class);
+        $response->expects($this->once())
+            ->method('getBody')
+            ->willReturn($stream);
+
+        $this->httpClient->expects($this->once())
+            ->method('request')
+            ->with('GET', 'https://test-domain.freshdesk.com/api/v2/tickets/123')
+            ->willReturn($response);
+
+        $this->expectException(FreshdeskApiException::class);
+        $this->expectExceptionMessage('JSON parsing error: ');
+
+        $this->freshdeskApiClient->getTask(123);
+    }
 }

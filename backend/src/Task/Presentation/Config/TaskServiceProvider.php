@@ -11,6 +11,7 @@ use Parser\Task\Domain\FreshdeskApiClientInterface;
 use Parser\Task\Domain\TaskParserInterface;
 use Parser\Task\Infrastructure\Adapter\FreshdeskApiClient;
 use Parser\Task\Presentation\Console\ParseTasksCommand;
+use Parser\Task\Presentation\Console\ParseSingleTaskCommand;
 use Illuminate\Support\ServiceProvider;
 
 final class TaskServiceProvider extends ServiceProvider
@@ -38,9 +39,10 @@ final class TaskServiceProvider extends ServiceProvider
 
         $this->app->bind(fn(): ClientInterface => new Client());
 
-        // Register console command
+        // Register console commands
         $this->commands([
             ParseTasksCommand::class,
+            ParseSingleTaskCommand::class,
         ]);
     }
 

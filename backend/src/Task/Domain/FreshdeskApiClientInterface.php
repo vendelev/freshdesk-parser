@@ -13,4 +13,10 @@ interface FreshdeskApiClientInterface
      * @return array<array<string, mixed>>
      */
     public function getTasks(int $page = 1, int $perPage = 100): array;
+
+    /**
+     * @throws FreshdeskApiException
+     * @return array<string, mixed>
+     */
+    public function getTask(int $taskId): array;
 }

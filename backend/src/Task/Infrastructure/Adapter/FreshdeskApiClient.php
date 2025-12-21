@@ -50,6 +50,39 @@ final readonly class FreshdeskApiClient implements FreshdeskApiClientInterface
     }
 
     /**
+     * @return array<string, mixed>
+     * @throws FreshdeskApiException
+     */
+    public function getTask(int $taskId): array
+    {
+        try {
+            $response = $this->httpClient->request(
+                'GET',
+                "https://{$this->freshdeskDomain}.freshdesk.com/api/v2/tickets/{$taskId}",
+                [
+                    'headers' => [
+                        'Authorization' => 'Basic ' . base64_encode("{$this->freshdeskApiKey}:X"),
+                    ],
+                ]
+            );
+
+            $body = (string) $response->getBody();
+            $data = json_decode($body, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw FreshdeskApiException::fromJsonError(json_last_error_msg());
+            }
+
+            return $data;
+        } catch (GuzzleException $e) {
+            throw FreshdeskApiException::fromHttpCode(
+                $e->getCode(),
+                $e->getMessage()
+            );
+        }
+    }
+
+    /**
      * @throws FreshdeskApiException
      */
     /**
