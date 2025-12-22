@@ -7,10 +7,12 @@ namespace Parser\Task\Presentation\Config;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use Parser\Task\Application\Service\FreshdeskTaskParser;
+use Parser\Task\Application\UseCase\ParseSingleTaskFromFreshdesk;
 use Parser\Task\Domain\FreshdeskApiClientInterface;
 use Parser\Task\Domain\TaskParserInterface;
 use Parser\Task\Infrastructure\Adapter\FreshdeskApiClient;
 use Parser\Task\Presentation\Console\ParseTasksCommand;
+use Parser\Task\Presentation\Console\ParseSingleTaskCommand;
 use Illuminate\Support\ServiceProvider;
 
 final class TaskServiceProvider extends ServiceProvider
@@ -36,11 +38,16 @@ final class TaskServiceProvider extends ServiceProvider
             ->needs('$storagePath')
             ->give(fn(): string => storage_path('freshdesk'));
 
+        $this->app->when(ParseSingleTaskFromFreshdesk::class)
+            ->needs('$storagePath')
+            ->give(fn(): string => storage_path('freshdesk'));
+
         $this->app->bind(fn(): ClientInterface => new Client());
 
         // Register console command
         $this->commands([
             ParseTasksCommand::class,
+            ParseSingleTaskCommand::class,
         ]);
     }
 

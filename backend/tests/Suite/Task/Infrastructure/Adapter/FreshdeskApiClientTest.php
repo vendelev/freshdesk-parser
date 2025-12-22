@@ -55,7 +55,13 @@ final class FreshdeskApiClientTest extends TestCase
 
         $this->httpClient->expects($this->once())
             ->method('request')
-            ->with('GET', 'https://test-domain.freshdesk.com/api/v2/tickets')
+            ->with(
+                'GET',
+                'https://test-domain.freshdesk.com/api/v2/tickets',
+                self::callback(static fn(array $options): bool => isset($options['headers']['Authorization'])
+                    && isset($options['query']['page'])
+                    && isset($options['query']['per_page']))
+            )
             ->willReturn($response);
 
         $result = $this->freshdeskApiClient->getTasks(1, 2);
@@ -73,7 +79,11 @@ final class FreshdeskApiClientTest extends TestCase
 
         $this->httpClient->expects($this->once())
             ->method('request')
-            ->with('GET', 'https://test-domain.freshdesk.com/api/v2/tickets')
+            ->with(
+                'GET',
+                'https://test-domain.freshdesk.com/api/v2/tickets',
+                self::isArray()
+            )
             ->willThrowException(new RequestException('Unauthorized', $request, $response));
 
         self::expectException(FreshdeskApiException::class);
@@ -99,11 +109,89 @@ final class FreshdeskApiClientTest extends TestCase
 
         $this->httpClient->expects($this->once())
             ->method('request')
+            ->with(self::anything(), self::anything(), self::isArray())
             ->willReturn($response);
 
         $this->expectException(FreshdeskApiException::class);
         $this->expectExceptionMessage('JSON parsing error: ');
 
         $this->freshdeskApiClient->getTasks(1, 2);
+    }
+
+    /**
+     * @throws FreshdeskApiException
+     */
+    public function testGetTaskReturnsRawJsonString(): void
+    {
+        $rawJson = '{"id":12345,"subject":"Hello"}';
+
+        $stream = $this->createMock(StreamInterface::class);
+        $stream->expects($this->once())
+            ->method('__toString')
+            ->willReturn($rawJson);
+
+        $response = $this->createMock(ResponseInterface::class);
+        $response->expects($this->once())
+            ->method('getBody')
+            ->willReturn($stream);
+
+        $this->httpClient->expects($this->once())
+            ->method('request')
+            ->with(
+                'GET',
+                'https://test-domain.freshdesk.com/api/v2/tickets/12345',
+                self::callback(static fn(array $options): bool => isset($options['headers']['Authorization']))
+            )
+            ->willReturn($response);
+
+        $result = $this->freshdeskApiClient->getTask(12345);
+
+        self::assertSame($rawJson, $result);
+    }
+
+    /**
+     * @throws FreshdeskApiException
+     */
+    public function testGetTaskRetriesOn429ThenSucceeds(): void
+    {
+        $taskId = 12345;
+        $url = "https://test-domain.freshdesk.com/api/v2/tickets/{$taskId}";
+
+        $request = new Request('GET', $url);
+        $rateLimitResponse = new Response(429, ['Retry-After' => '0'], 'Rate limited');
+        $successResponse = new Response(200, [], '{"id":12345}');
+
+        $this->httpClient->expects($this->exactly(2))
+            ->method('request')
+            ->with('GET', $url, self::isArray())
+            ->willReturnOnConsecutiveCalls(
+                $this->throwException(new RequestException('Rate limited', $request, $rateLimitResponse)),
+                $successResponse,
+            );
+
+        $result = $this->freshdeskApiClient->getTask($taskId);
+
+        self::assertSame('{"id":12345}', $result);
+    }
+
+    /**
+     * @throws FreshdeskApiException
+     */
+    public function testGetTaskThrowsExceptionOn404(): void
+    {
+        $taskId = 99999;
+        $url = "https://test-domain.freshdesk.com/api/v2/tickets/{$taskId}";
+        $request = new Request('GET', $url);
+        $response = new Response(404, [], 'Not Found');
+
+        $this->httpClient->expects($this->once())
+            ->method('request')
+            ->with('GET', $url, self::isArray())
+            ->willThrowException(new RequestException('Not Found', $request, $response));
+
+        self::expectException(FreshdeskApiException::class);
+        self::expectExceptionMessage('Freshdesk API error (404): Not Found');
+
+        $this->freshdeskApiClient->getTask($taskId);
     }
 }
