@@ -4,22 +4,21 @@ declare(strict_types=1);
 
 namespace Tests\Suite\Task\Infrastructure\Adapter;
 
-use Parser\Task\Domain\Exception\FreshdeskApiException;
-use Parser\Task\Infrastructure\Adapter\FreshdeskApiClient;
-use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Psr7\Response;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Parser\Task\Infrastructure\Adapter\FreshdeskApiClient;
+use Parser\Task\Domain\Exception\FreshdeskApiException;
+use GuzzleHttp\ClientInterface;
+use PHPUnit\Framework\MockObject\MockObject;
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 
 final class FreshdeskApiClientTest extends TestCase
 {
-    private FreshdeskApiClient $freshdeskApiClient;
+    private MockObject&ClientInterface $httpClient;
 
-    private ClientInterface&MockObject $httpClient;
+    private FreshdeskApiClient $freshdeskApiClient;
 
     protected function setUp(): void
     {
@@ -36,17 +35,21 @@ final class FreshdeskApiClientTest extends TestCase
     /**
      * @throws FreshdeskApiException
      */
-    public function testGetTasksReturnsArray(): void
+    public function testGetTaskByIdReturnsTaskData(): void
     {
-        $mockTasks = [
-            ['id' => 1, 'title' => 'Test Task 1'],
-            ['id' => 2, 'title' => 'Test Task 2'],
+        // Arrange
+        $taskId = 5000;
+        $expectedData = [
+            'id' => $taskId,
+            'subject' => 'Test Task',
+            'status' => 'open',
+            'priority' => 'high',
         ];
 
         $stream = $this->createMock(StreamInterface::class);
         $stream->expects($this->once())
             ->method('__toString')
-            ->willReturn(json_encode($mockTasks));
+            ->willReturn(json_encode($expectedData));
 
         $response = $this->createMock(ResponseInterface::class);
         $response->expects($this->once())
@@ -55,38 +58,126 @@ final class FreshdeskApiClientTest extends TestCase
 
         $this->httpClient->expects($this->once())
             ->method('request')
-            ->with('GET', 'https://test-domain.freshdesk.com/api/v2/tickets')
+            ->with('GET', "https://test-domain.freshdesk.com/api/v2/tickets/{$taskId}")
             ->willReturn($response);
 
-        $result = $this->freshdeskApiClient->getTasks(1, 2);
+        // Act
+        $result = $this->freshdeskApiClient->getTaskById($taskId);
 
-        self::assertEquals($mockTasks, $result);
+        // Assert
+        self::assertSame($expectedData, $result);
     }
 
     /**
      * @throws FreshdeskApiException
      */
-    public function testGetTasksThrowsExceptionOnHttpError(): void
+    public function testGetTaskByIdThrowsFreshdeskApiExceptionWhenGuzzleExceptionOccurs(): void
     {
-        $request = new Request('GET', 'https://test-domain.freshdesk.com/api/v2/tickets');
-        $response = new Response(401, [], 'Unauthorized');
+        // Arrange
+        $taskId = 5000;
 
         $this->httpClient->expects($this->once())
             ->method('request')
-            ->with('GET', 'https://test-domain.freshdesk.com/api/v2/tickets')
-            ->willThrowException(new RequestException('Unauthorized', $request, $response));
+            ->with('GET', "https://test-domain.freshdesk.com/api/v2/tickets/{$taskId}")
+            ->willThrowException(new RequestException(
+                'API error',
+                $this->createMock(RequestInterface::class)
+            ));
 
-        self::expectException(FreshdeskApiException::class);
-        self::expectExceptionMessage('Freshdesk API error (401): Unauthorized');
+        // Assert
+        $this->expectException(FreshdeskApiException::class);
 
-        $this->freshdeskApiClient->getTasks(1, 2);
+        // Act
+        $this->freshdeskApiClient->getTaskById($taskId);
+    }
+
+
+    /**
+     * @throws FreshdeskApiException
+     */
+    public function testGetTaskByIdThrowsFreshdeskApiExceptionWhenUnauthorized(): void
+    {
+        // Arrange
+        $taskId = 5000;
+
+        $response = $this->createMock(ResponseInterface::class);
+        $response->expects($this->once())
+            ->method('getStatusCode')
+            ->willReturn(401);
+
+        $this->httpClient->expects($this->once())
+            ->method('request')
+            ->with('GET', "https://test-domain.freshdesk.com/api/v2/tickets/{$taskId}")
+            ->willReturn($response);
+
+        // Assert
+        $this->expectException(FreshdeskApiException::class);
+        $this->expectExceptionMessage('Freshdesk API error (401): Unauthorized: Invalid API key');
+
+        // Act
+        $this->freshdeskApiClient->getTaskById($taskId);
     }
 
     /**
      * @throws FreshdeskApiException
      */
-    public function testGetTasksThrowsExceptionOnJsonError(): void
+    public function testGetTaskByIdThrowsFreshdeskApiExceptionWhenTaskNotFound(): void
     {
+        // Arrange
+        $taskId = 5000;
+
+        $response = $this->createMock(ResponseInterface::class);
+        $response->expects($this->once())
+            ->method('getStatusCode')
+            ->willReturn(404);
+
+        $this->httpClient->expects($this->once())
+            ->method('request')
+            ->with('GET', "https://test-domain.freshdesk.com/api/v2/tickets/{$taskId}")
+            ->willReturn($response);
+
+        // Assert
+        self::expectException(FreshdeskApiException::class);
+        self::expectExceptionMessage('Freshdesk API error (404): Task not found');
+
+        // Act
+        $this->freshdeskApiClient->getTaskById($taskId);
+    }
+
+    /**
+     * @throws FreshdeskApiException
+     */
+    public function testGetTaskByIdThrowsFreshdeskApiExceptionWhenRateLimitExceeded(): void
+    {
+        // Arrange
+        $taskId = 5000;
+
+        $response = $this->createMock(ResponseInterface::class);
+        $response->expects($this->once())
+            ->method('getStatusCode')
+            ->willReturn(429);
+
+        $this->httpClient->expects($this->once())
+            ->method('request')
+            ->with('GET', "https://test-domain.freshdesk.com/api/v2/tickets/{$taskId}")
+            ->willReturn($response);
+
+        // Assert
+        self::expectException(FreshdeskApiException::class);
+        self::expectExceptionMessage('Freshdesk API error (429): Rate limit exceeded');
+
+        // Act
+        $this->freshdeskApiClient->getTaskById($taskId);
+    }
+
+    /**
+     * @throws FreshdeskApiException
+     */
+    public function testGetTaskByIdThrowsFreshdeskApiExceptionWhenJsonIsInvalid(): void
+    {
+        // Arrange
+        $taskId = 5000;
+
         $stream = $this->createMock(StreamInterface::class);
         $stream->expects($this->once())
             ->method('__toString')
@@ -99,11 +190,13 @@ final class FreshdeskApiClientTest extends TestCase
 
         $this->httpClient->expects($this->once())
             ->method('request')
+            ->with('GET', "https://test-domain.freshdesk.com/api/v2/tickets/{$taskId}")
             ->willReturn($response);
 
-        $this->expectException(FreshdeskApiException::class);
-        $this->expectExceptionMessage('JSON parsing error: ');
+        // Assert
+        self::expectException(FreshdeskApiException::class);
 
-        $this->freshdeskApiClient->getTasks(1, 2);
+        // Act
+        $this->freshdeskApiClient->getTaskById($taskId);
     }
 }

@@ -83,4 +83,42 @@ final class FreshdeskTaskParserTest extends TestCase
 
         $this->taskParser->parse($request);
     }
+
+    /**
+     * @throws FreshdeskApiException
+     */
+    public function testSaveSingleTaskToFile(): void
+    {
+        $taskId = 5000;
+        $taskData = [
+            'id' => $taskId,
+            'subject' => 'Test Task',
+            'status' => 'open',
+            'priority' => 'high',
+        ];
+
+        // Create a real instance with a temporary directory for testing
+        $tempDir = '/tmp/' . uniqid('freshdesk_test_', true);
+        mkdir($tempDir, 0755, true);
+
+        $parser = new FreshdeskTaskParser($this->freshdeskClient, $tempDir);
+
+        // Save the task
+        $parser->saveSingleTaskToFile($taskData, $taskId);
+
+        // Check that the file was created
+        $filename = "{$tempDir}/tasks/{$taskId}.json";
+        self::assertFileExists($filename);
+
+        // Check the content
+        $content = file_get_contents($filename);
+        self::assertNotFalse($content);
+
+        $decoded = json_decode($content, true);
+        self::assertSame($taskData, $decoded);
+
+        // Clean up
+        unlink($filename);
+        rmdir($tempDir);
+    }
 }

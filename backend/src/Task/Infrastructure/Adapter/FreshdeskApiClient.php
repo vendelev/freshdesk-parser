@@ -50,6 +50,46 @@ final readonly class FreshdeskApiClient implements FreshdeskApiClientInterface
     }
 
     /**
+     * @return array<string, mixed>
+     * @throws FreshdeskApiException
+     */
+    public function getTaskById(int $taskId): array
+    {
+        try {
+            $response = $this->httpClient->request(
+                'GET',
+                "https://{$this->freshdeskDomain}.freshdesk.com/api/v2/tickets/{$taskId}",
+                [
+                    'headers' => [
+                        'Authorization' => 'Basic ' . base64_encode("{$this->freshdeskApiKey}:X"),
+                    ],
+                ]
+            );
+
+            // Проверяем код ответа и обрабатываем специфичные ошибки
+            $statusCode = $response->getStatusCode();
+            if ($statusCode === 401) {
+                throw FreshdeskApiException::fromHttpCode(401, 'Unauthorized: Invalid API key');
+            }
+
+            if ($statusCode === 404) {
+                throw FreshdeskApiException::fromHttpCode(404, 'Task not found');
+            }
+
+            if ($statusCode === 429) {
+                throw FreshdeskApiException::fromHttpCode(429, 'Rate limit exceeded');
+            }
+
+            return $this->parseSingleResponse($response);
+        } catch (GuzzleException $e) {
+            throw FreshdeskApiException::fromHttpCode(
+                $e->getCode(),
+                $e->getMessage()
+            );
+        }
+    }
+
+    /**
      * @throws FreshdeskApiException
      */
     /**
@@ -57,6 +97,22 @@ final readonly class FreshdeskApiClient implements FreshdeskApiClientInterface
      * @throws FreshdeskApiException
      */
     private function parseResponse(ResponseInterface $response): array
+    {
+        $body = (string) $response->getBody();
+        $data = json_decode($body, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw FreshdeskApiException::fromJsonError(json_last_error_msg());
+        }
+
+        return $data;
+    }
+
+    /**
+     * @return array<string, mixed>
+     * @throws FreshdeskApiException
+     */
+    private function parseSingleResponse(ResponseInterface $response): array
     {
         $body = (string) $response->getBody();
         $data = json_decode($body, true);

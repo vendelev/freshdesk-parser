@@ -56,18 +56,15 @@ final readonly class FreshdeskTaskParser implements TaskParserInterface
 
     private function getStoragePath(): string
     {
-        // In a real Laravel application, this would be the storage path
-        // For testing purposes, we'll use a temporary directory
         $path = $this->storagePath;
+
         if (!is_dir($path) && !mkdir($path, 0755, true) && !is_dir($path)) {
             throw new \RuntimeException(sprintf('Directory "%s" was not created', $path));
         }
 
-        if (
-            !is_dir("{$path}/freshdesk")
-            && !mkdir("{$path}/freshdesk", 0755, true) && !is_dir("{$path}/freshdesk")
-        ) {
-            throw new \RuntimeException(sprintf('Directory "%s" was not created', "{$path}/freshdesk"));
+        $taskPath = $path . '/tasks';
+        if (!is_dir($taskPath) && !mkdir($taskPath, 0755, true) && !is_dir($taskPath)) {
+            throw new \RuntimeException(sprintf('Directory "%s" was not created', $taskPath));
         }
 
         return $path;
@@ -84,7 +81,7 @@ final readonly class FreshdeskTaskParser implements TaskParserInterface
         // Find the last page that was parsed
         $lastPage = 0;
         $storagePath = $this->getStoragePath();
-        $files = glob("{$storagePath}/freshdesk/tasks-*.json");
+        $files = glob("{$storagePath}/tasks-*.json");
         if ($files !== false) {
             foreach ($files as $file) {
                 if (preg_match('/tasks-(\d+)\.json$/', basename($file), $matches)) {
@@ -102,7 +99,7 @@ final readonly class FreshdeskTaskParser implements TaskParserInterface
     private function cleanupExistingFiles(): void
     {
         $storagePath = $this->getStoragePath();
-        $files = glob("{$storagePath}/freshdesk/tasks-*.json");
+        $files = glob("{$storagePath}/tasks-*.json");
         if ($files !== false) {
             foreach ($files as $file) {
                 unlink($file);
@@ -117,7 +114,7 @@ final readonly class FreshdeskTaskParser implements TaskParserInterface
     private function saveTasksToFile(array $tasks, int $page): void
     {
         $storagePath = $this->getStoragePath();
-        $filename = "{$storagePath}/freshdesk/tasks-{$page}.json";
+        $filename = "{$storagePath}/tasks-{$page}.json";
 
         try {
             $json = json_encode($tasks, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
@@ -127,6 +124,29 @@ final readonly class FreshdeskTaskParser implements TaskParserInterface
 
             if (file_put_contents($filename, $json) === false) {
                 throw new FreshdeskApiException("Failed to save tasks to file: {$filename}");
+            }
+        } catch (JsonException $e) {
+            throw FreshdeskApiException::fromJsonError($e->getMessage());
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $taskData
+     * @throws FreshdeskApiException
+     */
+    public function saveSingleTaskToFile(array $taskData, int $taskId): void
+    {
+        $storagePath = $this->getStoragePath();
+        $filename = "{$storagePath}/tasks/{$taskId}.json";
+
+        try {
+            $json = json_encode($taskData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+            if ($json === false) {
+                throw new JsonException('Failed to encode task to JSON');
+            }
+
+            if (file_put_contents($filename, $json) === false) {
+                throw new FreshdeskApiException("Failed to save task to file: {$filename}");
             }
         } catch (JsonException $e) {
             throw FreshdeskApiException::fromJsonError($e->getMessage());

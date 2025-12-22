@@ -54,3 +54,33 @@ Then система делает паузу и повторяет запрос
 Given система запрашивает несуществующую задачу
 When API возвращает ошибку 404
 Then система выбрасывает FreshdeskApiException
+
+## API Endpoints
+
+### Получение задачи по ID
+
+#### Endpoint
+`GET /api/v2/tickets/{id}`
+
+#### Параметры
+- `id` (обязательный) - ID задачи в Freshdesk
+
+#### Успешный ответ (200 OK)
+```json
+{
+  "id": 12345,
+  "subject": "Проблема с доступом к системе",
+  "description": "Пользователь не может войти в систему",
+  "status": 2,
+  "priority": 1,
+  "requester_id": 123,
+  "responder_id": 456,
+  "created_at": "2023-01-01T10:00:00Z",
+  "updated_at": "2023-01-01T12:00:00Z"
+}
+```
+
+#### Ошибки
+- `401 Unauthorized` - Неверный API ключ
+- `404 Not Found` - Задача с указанным ID не найдена
+- `429 Too Many Requests` - Превышен лимит запросов
