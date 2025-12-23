@@ -81,7 +81,7 @@
         "fix": [
             "composer normalize --diff",
             "composer bump",
-            "vendor/bin/phpcbf",
+            "vendor/bin/phpcbf || echo \"Внесли правки\"",
             "vendor/bin/rector process"
         ],
         "init-test-db": [],
