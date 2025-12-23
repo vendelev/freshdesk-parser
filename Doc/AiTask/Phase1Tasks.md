@@ -19,13 +19,13 @@
 
 ## Domain Layer (Ticket Module)
 
-### 1. [PENDING] Создать Entity для Ticket
+### 1. [COMPLETED] Создать Entity для Ticket
 - **Файл**: `backend/src/Ticket/Domain/Entity/Ticket.php`
 - **Задача**: Определить структуру Entity соответствующую [Freshdesk API v2 Tickets](https://developers.freshdesk.com/api/#view_a_ticket)
 - **Поля**: freshdesk_id, subject, description, description_text, type, status, priority, source, requester_id, responder_id, company_id, group_id, product_id, email, name, phone, custom_fields, tags, attachments (metadata), due_by, fr_due_by, created_at, updated_at
 - **Требование**: Immutable Entity
 
-### 2. [PENDING] Создать ValueObjects для Ticket
+### 2. [COMPLETED] Создать ValueObjects для Ticket
 - **Файлы**:
   - `backend/src/Ticket/Domain/ValueObject/TicketId.php` (freshdesk_id)
   - `backend/src/Ticket/Domain/ValueObject/TicketStatus.php` (2:Open, 3:Pending, 4:Resolved, 5:Closed, 6:Waiting on Customer, 7:Waiting on Third Party)
@@ -33,16 +33,16 @@
   - `backend/src/Ticket/Domain/ValueObject/TicketSource.php` (1:Email, 2:Portal, 3:Phone, 7:Chat и т.д.)
 - **Требование**: Валидация и Immutable
 
-### 3. [PENDING] Создать Domain интерфейсы для Ticket
+### 3. [COMPLETED] Создать Domain интерфейсы для Ticket
 - **Файл**: `backend/src/Ticket/Domain/TicketRepositoryInterface.php`
 - **Методы**: save(Ticket): void, findById(int): ?Ticket, findByFreshdeskId(int): ?Ticket, delete(int): void
 
-### 4. [PENDING] Создать DTO для входящих данных Ticket
+### 4. [COMPLETED] Создать DTO для входящих данных Ticket
 - **Файлы**:
   - `backend/src/Ticket/Domain/Response/TicketResponse.php` (для выхода из UseCase)
   - `backend/src/Ticket/Domain/Response/TicketListResponse.php` (список tickets)
 
-### 5. [PENDING] Создать Domain исключения для Ticket
+### 5. [COMPLETED] Создать Domain исключения для Ticket
 - **Файл**: `backend/src/Ticket/Domain/Exception/`
 - **Исключения**: TicketNotFound, InvalidTicketData
 
@@ -216,7 +216,7 @@
 
 ### 35. [PENDING] Запустить PHP_CodeSniffer на коде
 - **Команда**: `make php-run CMD="vendor/bin/phpcs"`
-- **Цель**: Соответствие PSR-12
+- **Цель**: Соответствие стандартам из файла конфигурации
 
 ### 36. [PENDING] Запустить все тесты для Ticket модуля
 - **Команда**: `make php-run CMD="vendor/bin/phpunit"`
@@ -268,7 +268,7 @@
 
 ✅ **Качество кода**:
 - PHPStan: 0 ошибок
-- PHP_CodeSniffer: PSR-12 compliant
+- PHP_CodeSniffer: compliant
 - Все тесты passing (Unit, Functional, Integration, E2E)
 
 ✅ **Архитектура**:

@@ -150,7 +150,7 @@ make php-run CMD="vendor/bin/phpcbf"
 
 ```bash
 # 3. PHPStan - Проверка типов (0 ошибок)
-make php-run CMD="vendor/bin/phpstan analyse"
+make php-run CMD="vendor/bin/phpstan analyse --memory-limit=256M"
 
 # 4. PHP_CodeSniffer - Проверка кодстиля
 make php-run CMD="vendor/bin/phpcs --colors"
@@ -161,7 +161,7 @@ make php-run CMD="vendor/bin/phpunit --colors --coverage-text"
 
 **Критерии успеха**:
 - ✅ Rector: Код рефакторен и изменен автоматически
-- ✅ PHPCBF: Кодстиль автоматически исправлен до PSR-12
+- ✅ PHPCBF: Кодстиль автоматически исправлен в соответствии с файлом конфигурации
 - ✅ PHPStan: **0 ошибок**
 - ✅ PHP_CodeSniffer: **0 нарушений**
 - ✅ PHPUnit: **Все тесты PASSED**, код coverage ≥ 80%
@@ -193,7 +193,7 @@ make php-run CMD="vendor/bin/phpunit --colors --coverage-text"
    [Пишем Unit тесты] → backend/tests/Suite/Ticket/Domain/TicketTest.php
      ↓
    [Запускаем команды]
-   $ make php-run CMD="vendor/bin/phpstan analyse"
+   $ make php-run CMD="vendor/bin/phpstan analyse --memory-limit=256M"
    ✓ 0 ошибок
    $ make php-run CMD="vendor/bin/phpcs"
    ✓ 0 нарушений
