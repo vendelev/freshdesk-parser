@@ -66,6 +66,8 @@ alwaysApply: true
 ### Переменные окружения
 
 - **Backend**: `backend/.env.example` — шаблон с комментариями
+- **Backend**: `backend/.env.testing` — переменные для проведения тестов
+- **Backend**: `backend/.env` — переменные с реальными значениями
 
 ### Структура файлов в backend
 
