@@ -1,0 +1,54 @@
+---
+description: Тестирование
+alwaysApply: true
+---
+
+# Тестирование
+
+## Ресурсы для тестирования
+
+## Типы тестов
+
+### Unit тесты
+
+Тестирование отдельных компонентов в изоляции (без зависимостей).
+
+- **Расположение**: `backend/tests/Suite/{ModuleName}/Application`, `backend/tests/Suite/{ModuleName}/Domain`
+- **Охватывает**:
+  - Бизнес-логика в Service
+  - Валидация в Validation классах
+  - Логика в Domain объектах и ValueObject
+
+### Функциональные тесты
+
+Тестирование отдельных компонентов при взаимодействии с БД.
+
+- **Расположение**: `backend/tests/Suite/{ModuleName}/Application/UseCase`, `backend/tests/Suite/{ModuleName}/Application/Query`, `backend/tests/Suite/{ModuleName}/Application/Command`
+- **Охватывает**: 
+  - Бизнес-логика в UseCase, Query, Command
+
+### Integration тесты
+
+Тестирование взаимодействия компонентов с внешними системами.
+
+- **Расположение**: `backend/tests/Suite/{ModuleName}/Infrastructure`
+- **Охватывает**:
+  - Adapter (взаимодействие с внешними сервисами)
+  - Anti-corruption layer между модулями
+
+### End-To-End (E2E) тесты
+
+Тестирование полного потока: от HTTP запроса до ответа, включая все слои.
+
+- **Расположение**: `backend/tests/Suite/{ModuleName}/Presentation`
+- **Охватывает**:
+  - HTTP контроллеры и маршруты
+  - Middleware
+  - Полный жизненный цикл запроса и данных
+
+## Инструменты и утилиты
+
+- **PHP_CodeSniffer**: Проверка единого стиля написания кода и соблюдения стандартов кодирования
+- **PHPStan**: Статический анализ кода и проверка типов
+- **Rector**: Автоматическая рефакторизация и модернизация кода
+- **PostgreSQL**: Используется для тестовой БД с миграциями
