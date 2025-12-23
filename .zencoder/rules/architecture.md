@@ -173,7 +173,6 @@ Patient/
     - **TestCase.php** - Абстрактный класс-обертка над фреймворком.
 
 - **docker** - Файлы для сборки Docker контейнеров.
-- **openspec** - [Спецификация разработки](https://github.com/Fission-AI/OpenSpec)
 - **mock-server** - Конфигурация для [HTTP mock server](https://github.com/jmartin82/mmock)
 
 ## Правила зависимостей между слоями
