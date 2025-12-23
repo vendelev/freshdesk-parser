@@ -1,0 +1,474 @@
+# Phase 1: MVP — Список задач
+
+## Статус: Начало
+
+**Цель Phase 1**: Реализовать базовую синхронизацию задач (tickets) из Freshdesk в SQLite через консольную команду.
+
+---
+
+## Статусная модель и переходы
+
+### Описание статусов
+
+| Статус | Обозначение | Описание | Когда использовать |
+|--------|-------------|---------|-------------------|
+| **PENDING** | `[PENDING]` | Задача еще не начата | При первом создании списка задач или когда задача отложена |
+| **IN_PROGRESS** | `[IN_PROGRESS]` | Задача сейчас выполняется | Когда ИИ начинает работать над задачей |
+| **COMPLETED** | `[COMPLETED]` | Задача полностью выполнена | Когда задача 100% завершена и работает корректно |
+| **BLOCKED** | `[BLOCKED]` | Задача заблокирована (опционально) | Когда есть dependency от другой задачи или ошибка, которую не удалось решить |
+
+### Правила переходов между статусами
+
+```
+[PENDING] → [IN_PROGRESS] → [COMPLETED]
+                    ↓
+                [BLOCKED] → [PENDING] → [IN_PROGRESS] → [COMPLETED]
+```
+
+**Направление переходов**:
+- ✅ **PENDING → IN_PROGRESS**: Когда ИИ начинает работать над задачей
+- ✅ **IN_PROGRESS → COMPLETED**: Когда задача полностью готова и протестирована
+- ✅ **IN_PROGRESS → BLOCKED**: Если во время выполнения обнаружена проблема, которая требует решения (например, отсутствует зависимость)
+- ✅ **BLOCKED → PENDING**: Когда блокирующая проблема решена, задача переводится обратно в PENDING для переделки
+
+### Критерии COMPLETED статуса
+
+Задача может быть отмечена как `[COMPLETED]` только если:
+
+1. **Функциональность реализована**: Код написан и соответствует требованиям задачи
+2. **Код качественный**: Не содержит очевидных ошибок, соответствует стилю проекта
+3. **Тесты написаны** (если требуются): Для тестируемых компонентов есть соответствующие тесты
+4. **Нет зависимостей**: Задача не зависит от других незавершенных задач (или зависимости уже выполнены)
+5. **Логирование/Документация**: PHPDoc комментарии где требуются
+
+### Примеры переходов
+
+**Пример 1 - Простая реализация**:
+```
+Task #1: Создать Entity для Ticket
+[PENDING] → [IN_PROGRESS] (начали писать код)
+         → [COMPLETED] (Entity написана, работает, есть тесты)
+```
+
+**Пример 2 - Заблокированная задача**:
+```
+Task #20: Создать Adapter для Freshdesk API
+[PENDING] → [IN_PROGRESS] (начали писать)
+         → [BLOCKED] (нужна HTTP клиент обертка - Task #21)
+         (ИИ работает над Task #21)
+Task #21: Создать HTTP Client обертка
+[PENDING] → [IN_PROGRESS] → [COMPLETED]
+         ↑ (Task #20 разблокирована)
+Task #20: [BLOCKED] → [PENDING] → [IN_PROGRESS] → [COMPLETED]
+```
+
+### Формат изменения статуса в файле
+
+Когда статус задачи меняется, обновляется первое упоминание в заголовке задачи:
+
+```markdown
+### 1. [PENDING] Создать Entity для Ticket   ← Изменять этот статус
+```
+
+При изменении:
+```markdown
+### 1. [COMPLETED] Создать Entity для Ticket   ← Обновлено на COMPLETED
+```
+
+---
+
+## Workflow выполнения каждой задачи
+
+### Обязательные шаги для каждой задачи
+
+После завершения **каждой задачи** (перед отметкой как COMPLETED) необходимо выполнить:
+
+#### 1️⃣ Написание тестов (если требуются)
+
+**Когда писать тесты**:
+- ✅ Все компоненты Application и Domain слоев **ОБЯЗАТЕЛЬНО** должны быть протестированы
+- ✅ Infrastructure слой (Repository, Adapter) должен быть протестирован (Integration тесты с БД)
+- ✅ Presentation слой (Command, Listener) должен быть протестирован (E2E тесты)
+- ❌ Тесты для конфигурации и простых DTO можно опустить (если они не содержат логики)
+
+**Где размещать тесты**:
+```
+Компонент                           Путь теста
+─────────────────────────────────────────────────────────────
+Entity, ValueObject                 backend/tests/Suite/Ticket/Domain/
+Service                             backend/tests/Suite/Ticket/Application/Service/
+Query/QueryHandler                  backend/tests/Suite/Ticket/Application/Query/
+Command/CommandHandler              backend/tests/Suite/Ticket/Application/Command/
+UseCase                             backend/tests/Suite/Ticket/Application/UseCase/
+Repository                          backend/tests/Suite/Ticket/Infrastructure/Persistence/
+Adapter                             backend/tests/Suite/Ticket/Infrastructure/Adapter/
+Console Command                     backend/tests/Suite/Ticket/Presentation/Console/
+```
+
+**Минимальное требование**:
+- Для каждого public метода — хотя бы один позитивный тест
+- Для методов с валидацией — тесты на invalid данные
+- Для методов с зависимостями — используются Mock/Stub объекты
+
+#### 2️⃣ Запуск фиксеров кода
+
+**Сначала** запустить автоматические фиксеры для исправления кода и стиля:
+
+```bash
+# 1. Rector - Автоматическое улучшение кода (рефакторинг, модернизация)
+make php-run CMD="vendor/bin/rector process"
+
+# 2. PHPCBF - Автоматическое исправление стиля кода (PSR-12)
+make php-run CMD="vendor/bin/phpcbf"
+```
+
+#### 2️⃣.1️⃣ Запуск Code Quality & Verification команд
+
+**После фиксеров** запустить проверки и тесты:
+
+```bash
+# 3. PHPStan - Проверка типов (0 ошибок)
+make php-run CMD="vendor/bin/phpstan analyse"
+
+# 4. PHP_CodeSniffer - Проверка кодстиля
+make php-run CMD="vendor/bin/phpcs --colors"
+
+# 5. PHPUnit - Запуск всех тестов Ticket модуля
+make php-run CMD="vendor/bin/phpunit --colors --coverage-text"
+```
+
+**Критерии успеха**:
+- ✅ Rector: Код рефакторен и изменен автоматически
+- ✅ PHPCBF: Кодстиль автоматически исправлен до PSR-12
+- ✅ PHPStan: **0 ошибок**
+- ✅ PHP_CodeSniffer: **0 нарушений**
+- ✅ PHPUnit: **Все тесты PASSED**, код coverage ≥ 80%
+
+#### 3️⃣ Документирование (PHPDoc)
+
+- Добавить PHPDoc блоки для всех public методов
+- Документировать параметры (@param)
+- Документировать возвращаемое значение (@return)
+- Документировать возможные исключения (@throws)
+
+Пример:
+```php
+/**
+ * Трансформирует DTO из API в доменную Entity.
+ *
+ * @param TicketApiDto $dto DTO из Freshdesk API
+ *
+ * @return Ticket Трансформированная сущность
+ *
+ * @throws InvalidTicketData Если данные не соответствуют требованиям
+ */
+public function transformFromApi(TicketApiDto $dto): Ticket
+{
+    // ...
+}
+```
+
+### Чеклист для каждой задачи
+
+```markdown
+### N. [IN_PROGRESS] Название задачи
+
+- [ ] Код реализован согласно требованиям
+- [ ] Написаны все необходимые тесты
+- [ ] PHP_CodeSniffer: 0 нарушений
+- [ ] PHPStan: 0 ошибок
+- [ ] PHPUnit: все тесты passed
+- [ ] PHPDoc комментарии добавлены
+- [ ] Нет очевидных ошибок или TODO
+
+→ Когда все пункты ✅ **меняем статус на [COMPLETED]**
+```
+
+### Пример полного цикла задачи
+
+```
+### 1. [PENDING] Создать Entity для Ticket
+     ↓
+### 1. [IN_PROGRESS] Создать Entity для Ticket
+     (Пишем Ticket.php)
+     ↓
+   [Пишем Unit тесты] → backend/tests/Suite/Ticket/Domain/TicketTest.php
+     ↓
+   [Запускаем команды]
+   $ make php-run CMD="vendor/bin/phpstan analyse"
+   ✓ 0 ошибок
+   $ make php-run CMD="vendor/bin/phpcs"
+   ✓ 0 нарушений
+   $ make php-run CMD="vendor/bin/phpunit"
+   ✓ 5 tests passed
+     ↓
+   [Добавляем PHPDoc]
+     ↓
+### 1. [COMPLETED] Создать Entity для Ticket ✅
+```
+
+---
+
+## Domain Layer (Ticket Module)
+
+### 1. [PENDING] Создать Entity для Ticket
+- **Файл**: `backend/src/Ticket/Domain/Entity/Ticket.php`
+- **Задача**: Определить структуру Entity соответствующую [Freshdesk API v2 Tickets](https://developers.freshdesk.com/api/#view_a_ticket)
+- **Поля**: freshdesk_id, subject, description, description_text, type, status, priority, source, requester_id, responder_id, company_id, group_id, product_id, email, name, phone, custom_fields, tags, attachments (metadata), due_by, fr_due_by, created_at, updated_at
+- **Требование**: Immutable Entity с getters
+
+### 2. [PENDING] Создать ValueObjects для Ticket
+- **Файлы**:
+  - `backend/src/Ticket/Domain/ValueObject/TicketId.php` (freshdesk_id)
+  - `backend/src/Ticket/Domain/ValueObject/TicketStatus.php` (2:Open, 3:Pending, 4:Resolved, 5:Closed, 6:Waiting on Customer, 7:Waiting on Third Party)
+  - `backend/src/Ticket/Domain/ValueObject/TicketPriority.php` (1:Low, 2:Medium, 3:High, 4:Urgent)
+  - `backend/src/Ticket/Domain/ValueObject/TicketSource.php` (1:Email, 2:Portal, 3:Phone, 7:Chat и т.д.)
+- **Требование**: Валидация и Immutable
+
+### 3. [PENDING] Создать Domain интерфейсы для Ticket
+- **Файл**: `backend/src/Ticket/Domain/TicketRepositoryInterface.php`
+- **Методы**: save(Ticket): void, findById(int): ?Ticket, findByFreshdeskId(int): ?Ticket, delete(int): void
+
+### 4. [PENDING] Создать DTO для входящих данных Ticket
+- **Файлы**:
+  - `backend/src/Ticket/Domain/Response/TicketResponse.php` (для выхода из UseCase)
+  - `backend/src/Ticket/Domain/Response/TicketListResponse.php` (список tickets)
+
+### 5. [PENDING] Создать Domain исключения для Ticket
+- **Файл**: `backend/src/Ticket/Domain/Exception/`
+- **Исключения**: TicketNotFound, InvalidTicketData
+
+---
+
+## Application Layer (Ticket Module)
+
+### 6. [PENDING] Создать DTO для парсинга API ответов
+- **Файл**: `backend/src/Ticket/Application/Dto/TicketApiDto.php`
+- **Задача**: Структура для парсинга JSON из `GET /api/v2/tickets/{id}`
+- **Требование**: Все поля из Freshdesk API
+
+### 7. [PENDING] Создать DTO для листа tickets из API
+- **Файл**: `backend/src/Ticket/Application/Dto/TicketListApiDto.php`
+- **Задача**: Структура для парсинга JSON из `GET /api/v2/tickets?page=X` (пагинированная)
+
+### 8. [PENDING] Создать Service для трансформации API данных в Domain Entity
+- **Файл**: `backend/src/Ticket/Application/Service/TicketTransformer.php`
+- **Методы**: transformFromApi(TicketApiDto): Ticket
+
+### 9. [PENDING] Создать Query для получения списка ID задач
+- **Файл**: `backend/src/Ticket/Application/Query/GetTicketListQuery.php`
+- **Параметры**: page (int)
+
+### 10. [PENDING] Создать Query Handler для GetTicketListQuery
+- **Файл**: `backend/src/Ticket/Application/Query/GetTicketListQueryHandler.php`
+- **Логика**: Вызов adapter.getTickets(page), возврат TicketListApiDto
+
+### 11. [PENDING] Создать Query для получения полных данных одной задачи
+- **Файл**: `backend/src/Ticket/Application/Query/GetTicketQuery.php`
+- **Параметры**: freshdeskId (int)
+
+### 12. [PENDING] Создать Query Handler для GetTicketQuery
+- **Файл**: `backend/src/Ticket/Application/Query/GetTicketQueryHandler.php`
+- **Логика**: Вызов adapter.getTicket(freshdeskId), возврат TicketApiDto
+
+### 13. [PENDING] Создать Command для сохранения/обновления Ticket
+- **Файл**: `backend/src/Ticket/Application/Command/SaveTicketCommand.php`
+- **Параметры**: Ticket entity
+
+### 14. [PENDING] Создать Command Handler для SaveTicketCommand
+- **Файл**: `backend/src/Ticket/Application/Command/SaveTicketCommandHandler.php`
+- **Логика**: Вызов repository.save(ticket), логирование
+
+### 15. [PENDING] Создать UseCase для синхронизации всех Tickets
+- **Файл**: `backend/src/Ticket/Application/UseCase/SyncTicketsUseCase.php`
+- **Алгоритм**:
+  1. Получить список всех ID через getTickets() с пагинацией (for all pages)
+  2. Для каждого ID получить полные данные через getTicket()
+  3. Трансформировать в Entity через TicketTransformer
+  4. Сохранить через SaveTicketCommand
+  5. Логировать прогресс
+
+### 16. [PENDING] Создать Factory для создания Entity из DTO
+- **Файл**: `backend/src/Ticket/Application/Factory/TicketFactory.php`
+- **Методы**: createFromApiDto(TicketApiDto): Ticket
+
+---
+
+## Infrastructure Layer (Ticket Module)
+
+### 17. [PENDING] Создать Eloquent Model для Ticket БД
+- **Файл**: `backend/src/Ticket/Infrastructure/Persistence/EloquentTicketModel.php`
+- **Таблица**: tickets (соответствует схеме из Concept.md)
+- **Мутаторы**: custom_fields, tags, attachments (JSON)
+
+### 18. [PENDING] Создать миграцию для таблицы tickets
+- **Файл**: `backend/database/migrations/YYYY_MM_DD_create_tickets_table.php`
+- **Колонки**: Все поля из Data Model (Concept.md)
+- **Индексы**: freshdesk_id (UNIQUE), updated_at
+
+### 19. [PENDING] Создать Repository реализацию для Ticket
+- **Файл**: `backend/src/Ticket/Infrastructure/Persistence/DatabaseTicketRepository.php`
+- **Методы**: save(Ticket), findById(int), findByFreshdeskId(int), delete(int)
+- **Логика**: Преобразование Entity ↔ EloquentModel
+
+### 20. [PENDING] Создать Adapter для Freshdesk API (Ticket)
+- **Файл**: `backend/src/Ticket/Infrastructure/Adapter/FreshdeskTicketAdapter.php`
+- **Методы**:
+  - getTickets(int $page = 1): TicketListApiDto — `GET /api/v2/tickets?page={page}&per_page=100`
+  - getTicket(int $freshdeskId): TicketApiDto — `GET /api/v2/tickets/{id}`
+- **Требование**: Throttling (sleep(1) после каждого запроса), обработка 429 ошибок
+
+### 21. [PENDING] Создать HTTP Client обертка для API
+- **Файл**: `backend/src/Core/Infrastructure/Http/FreshdeskClient.php`
+- **Методы**: request(method, endpoint, options): Response
+- **Параметры**: Base URL, API ключ (из .env), Basic Auth
+
+---
+
+## Presentation Layer (Ticket Module)
+
+### 22. [PENDING] Создать Console Command для синхронизации tickets
+- **Файл**: `backend/src/Ticket/Presentation/Console/SyncTicketsCommand.php`
+- **Сигнатура**: `php artisan freshdesk:sync`
+- **Логика**:
+  1. Валидация наличия API ключа в .env
+  2. Вызов SyncTicketsUseCase
+  3. Вывод прогресс-бара и результатов в консоль
+  4. Обработка ошибок и их вывод
+- **Output**: Success/Error сообщения, количество синхронизованных tickets
+
+### 23. [PENDING] Создать Service Provider для Ticket модуля
+- **Файл**: `backend/src/Ticket/Presentation/Config/TicketServiceProvider.php`
+- **Регистрация**: Binding интерфейсов к реализациям в Service Container
+  - TicketRepositoryInterface → DatabaseTicketRepository
+  - FreshdeskTicketAdapter (singleton)
+- **Регистрация команды**: SyncTicketsCommand
+
+---
+
+## Database & Configuration
+
+### 24. [PENDING] Добавить Freshdesk API ключ в .env
+- **Файл**: `backend/.env.example` и `backend/.env`
+- **Переменная**: `FRESHDESK_API_KEY`, `FRESHDESK_API_DOMAIN` (digitalworlds.freshdesk.com)
+
+### 25. [PENDING] Создать/обновить конфиг базы данных для тестов
+- **Файл**: `backend/config/database.php`
+- **Требование**: Отдельная SQLite БД для тестов
+
+---
+
+## Testing (Ticket Module)
+
+### 26. [PENDING] Написать Unit тесты для Entity и ValueObjects
+- **Путь**: `backend/tests/Suite/Ticket/Domain/`
+- **Охват**: TicketId, TicketStatus, TicketPriority, TicketSource, Ticket Entity
+- **Требование**: Проверка валидации и immutability
+
+### 27. [PENDING] Написать Unit тесты для Service
+- **Путь**: `backend/tests/Suite/Ticket/Application/Service/`
+- **Охват**: TicketTransformer.transformFromApi()
+
+### 28. [PENDING] Написать Functional тесты для Query Handlers
+- **Путь**: `backend/tests/Suite/Ticket/Application/Query/`
+- **Охват**: GetTicketListQueryHandler, GetTicketQueryHandler
+- **Мок**: FreshdeskTicketAdapter
+
+### 29. [PENDING] Написать Functional тесты для Command Handlers
+- **Путь**: `backend/tests/Suite/Ticket/Application/Command/`
+- **Охват**: SaveTicketCommandHandler
+- **БД**: Тестовая SQLite
+
+### 30. [PENDING] Написать Functional тесты для SyncTicketsUseCase
+- **Путь**: `backend/tests/Suite/Ticket/Application/UseCase/`
+- **Охват**: Полный цикл синхронизации
+- **Мок**: FreshdeskTicketAdapter (тестовые данные)
+
+### 31. [PENDING] Написать Integration тесты для Repository
+- **Путь**: `backend/tests/Suite/Ticket/Infrastructure/Persistence/`
+- **Охват**: save(), findById(), findByFreshdeskId(), delete()
+- **БД**: Тестовая SQLite
+
+### 32. [PENDING] Написать E2E тесты для SyncTicketsCommand
+- **Путь**: `backend/tests/Suite/Ticket/Presentation/Console/`
+- **Охват**: Полный жизненный цикл команды artisan freshdesk:sync
+- **Проверка**: Exit code, консольный вывод, данные в БД
+
+### 33. [PENDING] Написать Mock/Stub данных для тестов
+- **Путь**: `backend/tests/Stub/`
+- **Охват**: FreshdeskApiResponses, TicketFactory для тестов
+
+---
+
+## Code Quality & Verification
+
+### 34. [PENDING] Запустить PHPStan на коде
+- **Команда**: `make php-run CMD="vendor/bin/phpstan analyse"`
+- **Цель**: 0 ошибок type checking
+
+### 35. [PENDING] Запустить PHP_CodeSniffer на коде
+- **Команда**: `make php-run CMD="vendor/bin/phpcs"`
+- **Цель**: Соответствие PSR-12
+
+### 36. [PENDING] Запустить все тесты для Ticket модуля
+- **Команда**: `make php-run CMD="vendor/bin/phpunit"`
+- **Цель**: 75% тестов passed, хороший coverage
+
+### 37. [PENDING] Проверить соблюдение архитектурных правил
+- **Файл**: `backend/tests/Architecture/TicketArchitectureTest.php`
+- **Проверки**:
+  - Application НЕ использует Presentation/Infrastructure слои других модулей
+  - Infrastructure НЕ использует Presentation слой
+  - Все зависимости между слоями через интерфейсы
+
+---
+
+## Documentation
+
+### 38. [PENDING] Написать PHPDoc комментарии для всех публичных методов
+- **Охват**: Все классы, методы, параметры, return типы, @throws
+
+### 39. [PENDING] Написать README.md для Ticket модуля
+- **Содержание**: Описание модуля, примеры использования, структура
+
+### 40. [PENDING] Обновить главный README.md проекта
+- **Добавить**: Инструкции по запуску `php artisan freshdesk:sync`
+
+---
+
+## Дополнительное / Bugfixes
+
+### 41. [PENDING] Проверить Docker setup и окружение
+- **Задача**: Убедиться что все контейнеры поднимаются корректно
+- **Команда**: `make install`, `make up`
+
+### 42. [PENDING] Проверить подключение к Freshdesk API
+- **Задача**: Тест реального API запроса (если доступен API ключ)
+- **Fallback**: Используется мок-сервер если нет доступа
+
+---
+
+## Критерии завершения Phase 1
+
+✅ **Все 42 задачи отмечены как [COMPLETED]**
+
+✅ **Функциональность**:
+- Консольная команда `php artisan freshdesk:sync` успешно синхронизирует tickets из Freshdesk
+- Данные сохраняются в SQLite БД в соответствии со схемой
+- Соблюдаются rate limits (1 сек между запросами)
+- Обработка ошибок и 429 ответов
+
+✅ **Качество кода**:
+- PHPStan: 0 ошибок
+- PHP_CodeSniffer: PSR-12 compliant
+- Все тесты passing (Unit, Functional, Integration, E2E)
+
+✅ **Архитектура**:
+- Clean Architecture + CQRS + Modular Monolith соблюдены
+- Все layer зависимости корректны
+- Service Provider правильно регистрирует компоненты
+
+✅ **Документация**:
+- PHPDoc комментарии на всех методах
+- README Ticket модуля
+- Обновлен главный README
