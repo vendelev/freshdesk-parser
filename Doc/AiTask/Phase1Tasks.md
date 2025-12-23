@@ -6,14 +6,25 @@
 
 ---
 
+## Основные правила
+
+- [Обзор проекта](../project-info.md)
+- [PHP Lead Developer Role](../Rule/DeveloperRole.md)
+- [Архитектура проекта](../Rule/Architecture.md)
+- [Тестирование](../Rule/Testing.md)
+- [Workflow при добавлении новой feature](../Rule/FeatureWorkflow.md)
+- [Подсказки при работе с PHP кодом](../Rule/CodeHints.md)
+
 ## Стандарт выполнения задач
 
-Для всех задач в этой фазе используется единый workflow, описанный в документе **[TaskExecutionGuide.md](TaskExecutionGuide.md)**.
+**ОБЯЗАТЕЛЬНО** Для всех задач в этой фазе используется единый workflow, описанный в документе **[TaskExecutionGuide.md](../Rule/TaskExecutionGuide.md)**.
 
 **Включает**:
 - Статусная модель и правила переходов между статусами
 - Обязательные шаги для каждой задачи (тесты, фиксеры, проверки, документация)
 - Чеклист и примеры полного цикла задачи
+
+**ОБЯЗАТЕЛЬНО** Перед тем как отметить задачу как выполненную, нужно убедиться, что все обязательные шаги выполнены.
 
 ---
 
@@ -50,12 +61,12 @@
 
 ## Application Layer (Ticket Module)
 
-### 6. [PENDING] Создать DTO для парсинга API ответов
+### 6. [COMPLETED] Создать DTO для парсинга API ответов
 - **Файл**: `backend/src/Ticket/Application/Dto/TicketApiDto.php`
 - **Задача**: Структура для парсинга JSON из `GET /api/v2/tickets/{id}`
 - **Требование**: Все поля из Freshdesk API
 
-### 7. [PENDING] Создать DTO для листа tickets из API
+### 7. [COMPLETED] Создать DTO для листа tickets из API
 - **Файл**: `backend/src/Ticket/Application/Dto/TicketListApiDto.php`
 - **Задача**: Структура для парсинга JSON из `GET /api/v2/tickets?page=X` (пагинированная)
 
