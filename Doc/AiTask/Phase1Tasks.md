@@ -21,8 +21,8 @@
 
 **Включает**:
 - Статусная модель и правила переходов между статусами
-- Обязательные шаги для каждой задачи (тесты, фиксеры, проверки, документация)
-- Чеклист и примеры полного цикла задачи
+- Обязательные шаги для каждой задачи (тесты, фиксеры кода, проверки, документация)
+- Контрольный список и примеры полного цикла задачи
 
 **ОБЯЗАТЕЛЬНО** Перед тем как отметить задачу как выполненную, нужно убедиться, что все обязательные шаги выполнены.
 
@@ -70,7 +70,7 @@
 - **Файл**: `backend/src/Ticket/Application/Dto/TicketListApiDto.php`
 - **Задача**: Структура для парсинга JSON из `GET /api/v2/tickets?page=X` (пагинированная)
 
-### 8. [PENDING] Создать Service для трансформации API данных в Domain Entity
+### 8. [COMPLETED] Создать Service для трансформации API данных в Domain Entity
 - **Файл**: `backend/src/Ticket/Application/Service/TicketTransformer.php`
 - **Методы**: transformFromApi(TicketApiDto): Ticket
 
@@ -107,7 +107,7 @@
   4. Сохранить через SaveTicketCommand
   5. Логировать прогресс
 
-### 16. [PENDING] Создать Factory для создания Entity из DTO
+### 16. [COMPLETED] Создать Factory для создания Entity из DTO
 - **Файл**: `backend/src/Ticket/Application/Factory/TicketFactory.php`
 - **Методы**: createFromApiDto(TicketApiDto): Ticket
 
@@ -184,7 +184,7 @@
 - **Охват**: TicketId, TicketStatus, TicketPriority, TicketSource, Ticket Entity
 - **Требование**: Проверка валидации и immutability
 
-### 27. [PENDING] Написать Unit тесты для Service
+### 27. [COMPLETED] Написать Unit тесты для Service
 - **Путь**: `backend/tests/Suite/Ticket/Application/Service/`
 - **Охват**: TicketTransformer.transformFromApi()
 
