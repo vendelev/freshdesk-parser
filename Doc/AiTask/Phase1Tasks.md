@@ -74,7 +74,7 @@
 - **Файл**: `backend/src/Ticket/Application/Service/TicketTransformer.php`
 - **Методы**: transformFromApi(TicketApiDto): Ticket
 
-### 9. [PENDING] Создать Query для получения списка ID задач
+### 9. [COMPLETED] Создать Query для получения списка ID задач
 - **Файл**: `backend/src/Ticket/Application/Query/GetTicketListQuery.php`
 - **Параметры**: page (int)
 
