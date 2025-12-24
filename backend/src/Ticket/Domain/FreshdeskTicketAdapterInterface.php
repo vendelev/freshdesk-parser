@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Parser\Ticket\Domain;
 
+use Parser\Ticket\Application\Dto\TicketApiDto;
 use Parser\Ticket\Application\Dto\TicketListApiDto;
 
 /**
@@ -21,4 +22,13 @@ interface FreshdeskTicketAdapterInterface
      * @return TicketListApiDto Пагинированный список задач
      */
     public function getTickets(int $page = 1): TicketListApiDto;
+    
+    /**
+     * Получить данные одной задачи из Freshdesk API по её ID.
+     *
+     * @param int $freshdeskId ID задачи в Freshdesk
+     *
+     * @return TicketApiDto Данные задачи
+     */
+    public function getTicket(int $freshdeskId): TicketApiDto;
 }

@@ -65,10 +65,10 @@
 **Статус**: [COMPLETED] | [Описание](./Tasks/Task_09_CreateGetTicketListQuery.md)
 
 ### 10. Создать Query Handler для GetTicketListQuery
-**Статус**: [PENDING] | [Описание](./Tasks/Task_10_CreateGetTicketListQueryHandler.md)
+**Статус**: [COMPLETED] | [Описание](./Tasks/Task_10_CreateGetTicketListQueryHandler.md)
 
 ### 11. Создать Query для получения полных данных одной задачи
-**Статус**: [PENDING] | [Описание](./Tasks/Task_11_CreateGetTicketQuery.md)
+**Статус**: [COMPLETED] | [Описание](./Tasks/Task_11_CreateGetTicketQuery.md)
 
 ### 12. Создать Query Handler для GetTicketQuery
 **Статус**: [PENDING] | [Описание](./Tasks/Task_12_CreateGetTicketQueryHandler.md)
