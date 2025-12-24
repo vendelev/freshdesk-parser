@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Providers\AppServiceProvider;
 use Illuminate\Auth\AuthServiceProvider;
 use Illuminate\Auth\Passwords\PasswordResetServiceProvider;
 use Illuminate\Cookie\CookieServiceProvider;
@@ -137,6 +138,9 @@ return [
             CookieServiceProvider::class,
             PaginationServiceProvider::class,
             PasswordResetServiceProvider::class,
+        ])
+        ->merge([
+            AppServiceProvider::class,
         ])
         ->toArray(),
 ];
