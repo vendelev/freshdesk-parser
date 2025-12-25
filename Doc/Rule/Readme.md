@@ -172,16 +172,78 @@
 
 ## Этап 4. Разработка тестов
 
+### Твоя роль
+
+Веди себя как **Ведущий тестировщик** с глубокими знаниями TDD (Test-Driven Development) и типами тестов.
+
+### Что надо сделать
+
 Внимательно изучи:
-- [DeveloperRole.md](/Doc/Rule/DeveloperRole.md)
 - [CodeStyle.md](/Doc/Rule/CodeStyle.md)
 - [Testing.md](/Doc/Rule/Testing.md)
-- новые требования к функционалу в файле [spec.md](/Doc/Issue/{ISSUE_FOLDER_LINK}/Spec.md)
+- Новые требования к функционалу в файле [Spec.md](/Doc/Issue/{ISSUE_FOLDER_LINK}/Spec.md)
+- Реализацию в файле [Task.md](/Doc/Issue/{ISSUE_FOLDER_LINK}/Task.md)
 
-Напиши тесты для нового функционала из файла [task.md](/Doc/Issue/{ISSUE_FOLDER_LINK}/Task.md)
+Обязательные шаги:
+
+1. Проанализируй Task.md для определения, какие компоненты и сценарии нужно протестировать.
+
+2. Напиши тесты для нового функционала, следуя типам из "Testing.md" (Unit, Integration, E2E). Размести тесты в соответствующих директориях (backend/tests/Suite/{ModuleName}/).
+
+3. Запусти автоматические инструменты исправления кода и стиля
+    ```bash
+    # 1. Rector - Автоматическое улучшение кода (рефакторинг, модернизация)
+    make php-run CMD="vendor/bin/rector process"
+    
+    # 2. PHPCBF - Автоматическое исправление стиля кода
+    make php-run CMD="vendor/bin/phpcbf"
+    ```
+
+   **Критерии успеха**:
+    - ✅ Rector: Код рефакторирован и изменен автоматически
+    - ✅ PHPCBF: Стиль кода автоматически исправлен в соответствии с файлом конфигурации
+
+4. Запусти проверку качества кода
+   ```bash
+   # 1. PHPStan - Проверка типов
+   make php-run CMD="vendor/bin/phpstan analyse --memory-limit=256M"
+   
+   # 2. Rector - Проверка рефакторинга и модернизации
+   make php-run CMD="vendor/bin/rector process --dry-run"
+   
+   # 3. PHP_CodeSniffer - Проверка кодстиля
+   make php-run CMD="vendor/bin/phpcs --colors"
+   ```
+
+   **Критерии успеха**:
+    - ✅ PHPStan: **0 ошибок**
+    - ✅ Rector: **OK**
+    - ✅ PHP_CodeSniffer: **0 нарушений**
+
+5. Запусти проверку PHPUnit
+    ```bash
+    # 1. PHPUnit - Запуск всех тестов
+    make php-run CMD="vendor/bin/phpunit --colors --coverage-text"
+    ```
+
+    **Критерии успеха**:
+    - ✅ PHPUnit: **Все тесты PASSED**, код coverage ≥ 75%
+
+6. Проверь тесты на соответствие чек-листу:
+   - Покрыты ли все сценарии из Spec.md?
+   - Тесты соответствуют архитектуре и стилям?
+   - Нет дублирования или избыточности?
 
 ### Результат
 
-.....
+1. Написаны и запущены тесты для нового функционала
+2. Все тесты проходят, покрытие соответствует требованиям
+3. PHPStan: не выводит ошибок
+4. Rector: не выводит ошибок
+5. PHP_CodeSniffer: не выводит ошибок
 
 ### Ревью пользователем тестов
+
+Если ревю прошло → перейти к коммиту. Если нет → исправить тесты и повторить проверки.
+
+### Коммит изменений в git
