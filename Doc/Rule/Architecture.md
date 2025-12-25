@@ -1,8 +1,3 @@
----
-description: Project Architecture
-alwaysApply: true
----
-
 # Архитектура проекта
 
 ## Design Patterns & Principles

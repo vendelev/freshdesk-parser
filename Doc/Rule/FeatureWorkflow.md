@@ -1,8 +1,3 @@
----
-description: Feature Workflow
-alwaysApply: true
----
-
 # Workflow при добавлении новой feature
 
 
