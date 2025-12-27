@@ -106,41 +106,6 @@
 - **Проверяемое**: Выполнение команды
 - **Ожидаемый результат**: Вывод справки с описанием опций
 
-## Чек-лист выполнения
-
-### Команды для запуска тестов
-
-```bash
-# Все тесты модуля
-./vendor/bin/phpunit tests/Suite/TicketDetail/
-
-# Только Application слой
-./vendor/bin/phpunit tests/Suite/TicketDetail/Application/
-
-# Только Infrastructure слой
-./vendor/bin/phpunit tests/Suite/TicketDetail/Infrastructure/
-
-# Только Presentation слой
-./vendor/bin/phpunit tests/Suite/TicketDetail/Presentation/
-
-# С покрытием кода
-./vendor/bin/phpunit tests/Suite/TicketDetail/ --coverage-html=reports/coverage
-```
-
-### Архитектурные тесты
-
-```bash
-# Проверка соответствия Clean Architecture
-./vendor/bin/phpunit tests/Architecture/
-```
-
-### Интеграционные тесты с внешними зависимостями
-
-```bash
-# С mock-server для Freshdesk API
-make test-integration
-```
-
 ## Критерии приемки
 
 ### CA1: Успешное получение детальной информации

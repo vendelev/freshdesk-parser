@@ -126,20 +126,6 @@ backend/src/Backup/Domain/FreshdeskClientInterface.php  // добавить ме
 backend/src/Backup/Infrastructure/Adapter/FreshdeskHttpClientAdapter.php  // реализовать getTicketDetail
 ```
 
-### Новые файлы тестов
-
-```
-backend/tests/Suite/TicketDetail/
-├── Application/
-│   ├── UseCase/SaveTicketDetailUseCaseTest.php
-│   └── Command/SaveTicketDetailCommandHandlerTest.php
-├── Infrastructure/
-│   ├── FileTicketDetailRepositoryTest.php
-│   └── FreshdeskHttpDetailClientAdapterTest.php
-└── Presentation/
-    └── SaveTicketDetailsCommandTest.php
-```
-
 ## Последовательность действий
 
 1. **Расширить Backup модуль:**
@@ -174,11 +160,6 @@ backend/tests/Suite/TicketDetail/
 ### Что нужно выполнить до
 
 - Реализация FD-1 Backup Module (для FreshdeskClientInterface и получения списка задач)
-
-### Что нужно выполнить после
-
-- Обновление документации модуля
-- Добавление в CI/CD пайплайн команд для тестирования
 
 ## Диаграммы или псевдокод
 
