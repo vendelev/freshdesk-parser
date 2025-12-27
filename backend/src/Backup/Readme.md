@@ -40,11 +40,15 @@
 │ │ - Получение задач       │ │    │ │   файловую систему  │   │
 │ │ - Обработка пагинации   │ │    │ │ - Создание директ. │   │
 │ │ - Обработка ошибок      │ │    │ │ - Обработка ошибок │   │
+│ │ - Получение деталей     │ │    │ │ - Сохранение       │   │
+│ │   задач (getTicketDetail)│ │    │ │   метаданных       │   │
 │ └──────────────────────────┘ │    │ └─────────────────────┘   │
 └──────────────────────────────┘    └───────────────────────────┘
            │                                    │
            ▼                                    ▼
     Freshdesk API                        Файловая система
+           │                                    │
+           └── ИСПОЛЬЗУЕТСЯ МОДУЛЕМ TICKETDETAIL ─┘
 ```
 
 ### Структура каталогов
@@ -97,9 +101,22 @@ Domain слой определяет контракты и исключения 
  * @throws FreshdeskApiUnauthorizedException
  */
 public function getTicketsIterator(): Generator;
+
+/**
+ * Получить детальную информацию о задаче по ID
+ *
+ * @param int $ticketId ID задачи
+ * @return string Сырой JSON с детальной информацией задачи
+ * @throws FreshdeskApiConnectionException
+ * @throws FreshdeskApiRateLimitException
+ * @throws FreshdeskApiUnauthorizedException
+ */
+public function getTicketDetail(int $ticketId): string;
 ```
 
-**Ответственность**: Предоставить генератор, который итеративно выдает JSON строки с задачами (по одной странице за раз).
+**Ответственность**: 
+- Предоставить генератор, который итеративно выдает JSON строки с задачами (по одной странице за раз)
+- Получить детальную информацию о конкретной задаче с полным набором данных, включая conversations
 
 #### BackupStorageInterface
 
@@ -272,11 +289,11 @@ make php-run CMD="php artisan backup:tickets --help"
 - Guzzle `Client` — HTTP клиент для запросов
 - Конфигурация (API ключ, домен) — через DI контейнер
 
-**Метод `getTickets(): array`**:
+**Метод `getTicketsIterator(): Generator`**:
 
 1. **Инициализация**:
    - Получение API ключа и домена из конфигурации
-   - Инициализация переменной для накопления результатов
+   - Инициализация счетчика попыток и задержки
 
 2. **Получение первой страницы**:
    - GET запрос: `https://{domain}.freshdesk.com/api/v2/tickets?page=1&per_page=100`
@@ -296,7 +313,36 @@ make php-run CMD="php artisan backup:tickets --help"
    - Exponential backoff: 1 сек, 2 сек, 4 сек
    - Максимум 3 попытки
 
-6. **Возврат**: Единый массив всех задач
+6. **Возврат**: Генератор JSON строк с задачами
+
+**Метод `getTicketDetail(int $ticketId): string`**:
+
+1. **Получение детальной информации**:
+   - GET запрос: `https://{domain}.freshdesk.com/api/v2/tickets/{ticketId}`
+   - Заголовки: `Authorization: Basic {base64(api_key:)}`
+
+2. **Обработка conversations**:
+   - Проверка наличия поля `conversations` в основном ответе
+   - Если conversations есть, получение ВСЕХ conversations через пагинацию
+   - Запросы: `https://{domain}.freshdesk.com/api/v2/tickets/{ticketId}/conversations?page=N&per_page=100`
+   - Объединение всех страниц conversations в единый массив
+   - Замена conversations в основном ответе полным массивом
+
+3. **Retry логика** (аналогично getTicketsIterator):
+   - Exponential backoff для rate limiting
+   - Максимум 3 попытки
+
+4. **Обработка ошибок**:
+   - HTTP 404 → `FreshdeskApiConnectionException` (задача не найдена)
+   - HTTP 401 → `FreshdeskApiUnauthorizedException` (неверный API ключ)
+   - HTTP 429 → `FreshdeskApiRateLimitException` (лимит превышен)
+   - Ошибки подключения → `FreshdeskApiConnectionException`
+
+5. **Graceful degradation**:
+   - При ошибках получения conversations продолжает с основными данными
+   - Не блокирует сохранение основной информации задачи
+
+6. **Возврат**: Полный JSON с детальной информацией задачи и всеми conversations
 
 ### FileBackupStorageAdapter
 
@@ -338,6 +384,19 @@ make php-run CMD="php artisan backup:tickets --help"
 ### Внутренние зависимости (модули проекта)
 
 - **Core** — нет прямой зависимости, но можно использовать общие исключения или утилиты
+- **TicketDetail Module** — использует `FreshdeskClientInterface::getTicketDetail()` для получения детальной информации задач
+
+### Интеграция с модулем TicketDetail
+
+Модуль Backup предоставляет функциональность получения детальной информации о задачах для модуля TicketDetail:
+
+- **Используемый интерфейс**: `FreshdeskClientInterface::getTicketDetail(int $ticketId): string`
+- **Цель**: Получение полной информации о задаче, включая conversations с пагинацией
+- **Механизм**: Модуль TicketDetail использует адаптер для делегирования вызовов к Backup модулю
+- **Преимущества**: 
+  - Повторное использование логики работы с Freshdesk API
+  - Централизованная обработка ошибок и retry механизмов
+  - Согласованность в работе с внешним API
 
 ### Внешние библиотеки PHP
 
@@ -591,3 +650,6 @@ Freshdesk API имеет ограничения на количество зап
 - REST API для управления бекапами
 - Восстановление данных из бекапа
 - Синхронизация инкрементальных изменений
+- Оптимизация получения детальной информации для множественных задач
+- Кэширование результатов API запросов
+- Асинхронная обработка больших объемов данных
