@@ -24,7 +24,7 @@ $response = new TaskResponse();
 
 ### Исключения
 
-- Не добавляйте оператор `use` для встроенных типов PHP (int, string, bool, array, etc.)
+- Не добавляйте оператор `use` для встроенных типов и функций PHP (int, string, count(), etc.)
 - Не добавляйте оператор `use` для классов в том же namespace
 
 --- 

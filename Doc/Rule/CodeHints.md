@@ -29,6 +29,26 @@ $this->app->bind(Interface::class, Implementation::class);
 
 В остальных случаях объявлять класс в контейнере зависимостей НЕ ТРЕБУЕТСЯ.
 
+## Регистрация ServiceProvider
+
+Каждый модуль может иметь свой ServiceProvider для регистрации компонентов в контейнере зависимостей.
+
+### Регистрация в bootstrap/providers.php
+
+Все ServiceProvider должны быть зарегистрированы в файле `backend/bootstrap/providers.php`:
+
+```php
+<?php
+
+use Parser\Core\Presentation\Config\CoreServiceProvider;
+use Parser\Backup\Presentation\Config\BackupServiceProvider;
+
+return [
+    CoreServiceProvider::class,
+    BackupServiceProvider::class,
+];
+```
+
 ## Рекомендации по использованию переменных окружения
 
 ### Общие принципы
