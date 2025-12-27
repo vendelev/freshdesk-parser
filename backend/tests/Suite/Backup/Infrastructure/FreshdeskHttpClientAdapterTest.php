@@ -147,12 +147,7 @@ final class FreshdeskHttpClientAdapterTest extends TestCase
         $mockHttpClient = $this->createMock(Client::class);
 
         // Первый запрос вызывает 429 ошибку
-        $request = new Request('GET', 'https://test.freshdesk.com/api/v2/tickets');
-        $rateLimitException = new RequestException(
-            'Too Many Requests',
-            $request,
-            new Response(429),
-        );
+        new Request('GET', 'https://test.freshdesk.com/api/v2/tickets');
 
         // Повторный запрос успешен
         $successResponse = new Response(200, [], (string)json_encode(array_fill(0, 50, ['id' => 1])));
@@ -162,7 +157,7 @@ final class FreshdeskHttpClientAdapterTest extends TestCase
             ->expects(self::any())
             ->method('get')
             ->willReturnOnConsecutiveCalls(
-                $rateLimitException,
+                new Response(429),
                 $successResponse,
                 new Response(200, [], '[]'),
             );

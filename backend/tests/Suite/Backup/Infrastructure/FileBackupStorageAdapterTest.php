@@ -215,7 +215,7 @@ final class FileBackupStorageAdapterTest extends TestCase
             // Если мы здесь - тест может быть пропущен (например, если разработчик использует sudo)
             self::markTestSkipped('Тест требует директорию без прав на запись');
         } catch (BackupOperationFailedException $e) {
-            self::assertStringContainsString('Не удалось', $e->getMessage());
+            self::assertStringContainsString('Ошибка при сохранении', $e->getMessage());
         } finally {
             // Очистка
             chmod($readOnlyPath, 0755);
