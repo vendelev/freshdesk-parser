@@ -16,13 +16,13 @@
 ## Что надо сделать
 
 Внимательно изучи:
-- Информацию о проекте в [ProjectInfo.md](/Doc/ProjectInfo.md)
-- Правила архитектуры в [Architecture.md](/Doc/Rule/Architecture.md)
-- Workflow при добавлении новой feature в [FeatureWorkflow.md](/Doc/Rule/FeatureWorkflow.md)
-- Особенности работы с PHP в этом проекте в [CodeHints.md](/Doc/Rule/CodeHints.md)
-- Новые бизнес-требования в [Spec.md](/Doc/Issue/{ISSUE_FOLDER_LINK}/Spec.md)
+- Информацию о проекте в [ProjectInfo.md](../ProjectInfo.md)
+- Правила архитектуры в [Architecture.md](../Rule/Architecture.md)
+- Workflow при добавлении новой feature в [FeatureWorkflow.md](../Rule/FeatureWorkflow.md)
+- Особенности работы с PHP в этом проекте в [CodeHints.md](../Rule/CodeHints.md)
+- Новые бизнес-требования в [Spec.md](../Issue/{ISSUE_FOLDER_LINK}/Spec.md)
 
-Нужно создать новый файл (/Doc/Issue/{ISSUE_FOLDER_LINK}/Task.md) с детальным описанием реализации бизнес-требований.
+Нужно создать новый файл (../Issue/{ISSUE_FOLDER_LINK}/Task.md) с детальным описанием реализации бизнес-требований.
 
 ### Структура Task.md
 
@@ -45,7 +45,7 @@
 - Покрыты ли все требования из Spec.md?
 - Учтены ли риски и альтернативы из Spec.md?
 - Соответствует ли предложенное решение принципам Модульного монолита, Clean Architecture и CQRS?
-- Соответствует ли предложенное решение правилам архитектуры проекта [Architecture.md](/Doc/Rule/Architecture.md)?
+- Соответствует ли предложенное решение правилам архитектуры проекта [Architecture.md](../Rule/Architecture.md)?
 - Понятна ли последовательность для разработчика?
 
 Файл "Task.md" будет использоваться на следующем этапе другим AI-агентом, который внесет необходимые правки в код проекта.

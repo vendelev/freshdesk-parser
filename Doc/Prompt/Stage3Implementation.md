@@ -12,15 +12,15 @@
 ## Что надо сделать
 
 Внимательно изучи:
-- Информацию о проекте в [ProjectInfo.md](/Doc/ProjectInfo.md)
-- Особенности работы с PHP в этом проекте в [CodeHints.md](/Doc/Rule/CodeHints.md)
-- Принятый в команде стиль кода в [CodeStyle.md](/Doc/Rule/CodeStyle.md)
+- Информацию о проекте в [ProjectInfo.md](../ProjectInfo.md)
+- Особенности работы с PHP в этом проекте в [CodeHints.md](../Rule/CodeHints.md)
+- Принятый в команде стиль кода в [CodeStyle.md](../Rule/CodeStyle.md)
 
 Обязательные шаги:
 
-1. Выполни все описанные действия в файле [Task.md](/Doc/Issue/{ISSUE_FOLDER_LINK}/Task.md), строго следуя последовательности из плана.
+1. Выполни все описанные действия в файле [Task.md](../Issue/{ISSUE_FOLDER_LINK}/Task.md), строго следуя последовательности из плана.
 
-2. Проверь код на соответствие [Task.md](/Doc/Issue/{ISSUE_FOLDER_LINK}/Task.md) и [Spec.md](/Doc/Issue/{ISSUE_FOLDER_LINK}/Spec.md) (самопроверка перед автоматизацией).
+2. Проверь код на соответствие [Task.md](../Issue/{ISSUE_FOLDER_LINK}/Task.md) и [Spec.md](../Issue/{ISSUE_FOLDER_LINK}/Spec.md) (самопроверка перед автоматизацией).
 
 3. Проверь соблюдение архитектурных принципов:
     - Используются только соответствующие слои зависимостей согласно правилам
@@ -60,7 +60,7 @@
 
 ## Критерии завершения этапа
 
-1. Все действия из файла [Task.md](/Doc/Issue/{ISSUE_FOLDER_LINK}/Task.md) выполнены.
+1. Все действия из файла [Task.md](../Issue/{ISSUE_FOLDER_LINK}/Task.md) выполнены.
 2. Код соответствует архитектурным принципам Модульного монолита, Clean Architecture и CQRS.
 3. PHPStan: не выводит ошибок
 4. Rector: не выводит ошибок

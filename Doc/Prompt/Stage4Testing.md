@@ -11,16 +11,16 @@
 ## Что надо сделать
 
 Внимательно изучи:
-- [CodeStyle.md](/Doc/Rule/CodeStyle.md)
-- [Testing.md](/Doc/Rule/Testing.md)
-- Новые требования к функционалу в файле [Spec.md](/Doc/Issue/{ISSUE_FOLDER_LINK}/Spec.md)
-- Реализацию в файле [Task.md](/Doc/Issue/{ISSUE_FOLDER_LINK}/Task.md)
+- [CodeStyle.md](../Rule/CodeStyle.md)
+- [Testing.md](../Rule/Testing.md)
+- Новые требования к функционалу в файле [Spec.md](../Issue/{ISSUE_FOLDER_LINK}/Spec.md)
+- Реализацию в файле [Task.md](../Issue/{ISSUE_FOLDER_LINK}/Task.md)
 
 Обязательные шаги:
 
 1. Проанализируй Task.md для определения, какие компоненты и сценарии нужно протестировать.
 
-2. Напиши тесты для нового функционала, следуя типам из [Testing.md](/Doc/Rule/Testing.md) (Unit, Integration, E2E). Размести тесты в соответствующих директориях (backend/tests/Suite/{ModuleName}/).
+2. Напиши тесты для нового функционала, следуя типам из [Testing.md](../Rule/Testing.md) (Unit, Integration, E2E). Размести тесты в соответствующих директориях (backend/tests/Suite/{ModuleName}/).
 
 3. Запусти автоматические инструменты исправления кода и стиля
     ```bash

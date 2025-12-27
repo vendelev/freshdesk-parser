@@ -84,6 +84,9 @@ Patient/
 ```php
 Patient/
 ├── Domain/
+│   ├── Doc/
+│   │   ├── Diagram.md
+│   │   └── FreshDeskApi.md
 │   ├── PatientRepositoryInterface.php
 │   ├── Request/
 │   │   └── CreatePatientRequest.php
