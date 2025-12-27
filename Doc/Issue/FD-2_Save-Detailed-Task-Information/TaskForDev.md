@@ -144,7 +144,7 @@ backend/src/Backup/Infrastructure/Adapter/FreshdeskHttpClientAdapter.php  // р�
    - `TicketDetailFactory` для создания объектов
 
 4. **Создать Infrastructure слой:**
-   - `FileTicketDetailRepository` для сохранения JSON в `storage/tickets/detail/{id}.json`
+   - `FileTicketDetailRepository` для сохранения JSON в `storage/backups/detail/{id}.json`
    - `FreshdeskHttpDetailClientAdapter` реализующий `FreshdeskDetailClientInterface`
 
 5. **Создать Presentation слой:**
@@ -195,7 +195,7 @@ class SaveTicketDetailUseCase
             return new SaveTicketDetailResponse(
                 $request->ticketId,
                 'success',
-                "storage/tickets/detail/{$request->ticketId}.json",
+                "storage/backups/detail/{$request->ticketId}.json",
                 $metadata->savedAt,
                 null
             );
