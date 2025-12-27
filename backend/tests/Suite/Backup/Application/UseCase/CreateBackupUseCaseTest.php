@@ -148,7 +148,7 @@ final class CreateBackupUseCaseTest extends TestCase
         // Проверки
         self::assertSame('error', $response->status);
         self::assertSame('Ошибка подключения к Freshdesk API', $response->message);
-        self::assertStringContainsString('Ошибка подключения', $response->errorDetails);
+        self::assertStringContainsString('Ошибка подключения', (string)$response->errorDetails);
     }
 
     /**

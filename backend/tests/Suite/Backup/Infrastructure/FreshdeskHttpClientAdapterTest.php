@@ -35,7 +35,6 @@ final class FreshdeskHttpClientAdapterTest extends TestCase
         self::assertIsString($responseBody);
 
         // Мок ответа
-        /** @var string $responseBody */
         $response = new Response(200, [], $responseBody);
 
         $mockHttpClient
@@ -156,7 +155,7 @@ final class FreshdeskHttpClientAdapterTest extends TestCase
         );
 
         // Повторный запрос успешен
-        $successResponse = new Response(200, [], json_encode(array_fill(0, 50, ['id' => 1])));
+        $successResponse = new Response(200, [], (string)json_encode(array_fill(0, 50, ['id' => 1])));
 
         // Последовательность ответов: ошибка 429 -> успех -> пустой ответ
         $mockHttpClient
@@ -231,6 +230,7 @@ final class FreshdeskHttpClientAdapterTest extends TestCase
 
         $iterator = $adapter->getTicketsIterator();
         foreach ($iterator as $_) {
+            echo $_;
             // Итератор должен выбросить исключение при первом обращении
             break;
         }
@@ -269,6 +269,7 @@ final class FreshdeskHttpClientAdapterTest extends TestCase
 
         $iterator = $adapter->getTicketsIterator();
         foreach ($iterator as $_) {
+            echo $_;
             // Итератор должен выбросить исключение при первом обращении
             break;
         }
@@ -311,6 +312,7 @@ final class FreshdeskHttpClientAdapterTest extends TestCase
 
         $iterator = $adapter->getTicketsIterator();
         foreach ($iterator as $_) {
+            echo $_;
             // Итератор должен выбросить исключение при первом обращении
             break;
         }
@@ -328,7 +330,7 @@ final class FreshdeskHttpClientAdapterTest extends TestCase
         // Подготовка мока HTTP клиента
         $mockHttpClient = $this->createMock(Client::class);
 
-        $successResponse = new Response(200, [], json_encode(array_fill(0, 50, ['id' => 1])));
+        $successResponse = new Response(200, [], (string)json_encode(array_fill(0, 50, ['id' => 1])));
 
         $mockHttpClient
             ->expects(self::any())
@@ -351,10 +353,8 @@ final class FreshdeskHttpClientAdapterTest extends TestCase
         $iterator = $adapter->getTicketsIterator();
 
         foreach ($iterator as $_) {
+            echo $_;
             break;
         }
-
-        // Проверка выполнена через mock expectations
-        self::assertTrue(true);
     }
 }

@@ -53,7 +53,7 @@ final class FileBackupStorageAdapterTest extends TestCase
     {
         // Подготовка
         $adapter = new FileBackupStorageAdapter($this->testStoragePath);
-        $ticketsJson = json_encode(array_fill(0, 50, ['id' => 1, 'subject' => 'Test Ticket']));
+        $ticketsJson = (string)json_encode(array_fill(0, 50, ['id' => 1, 'subject' => 'Test Ticket']));
         $backupId = '2025-01-15_103000';
         $pageNumber = 1;
 
@@ -88,7 +88,7 @@ final class FileBackupStorageAdapterTest extends TestCase
 
         // Выполнение
         foreach ($pages as $pageNumber => $pageJson) {
-            $adapter->savePage($pageJson, $backupId, $pageNumber);
+            $adapter->savePage((string)$pageJson, $backupId, $pageNumber);
         }
 
         // Проверка
@@ -126,7 +126,7 @@ final class FileBackupStorageAdapterTest extends TestCase
         $expectedPath = $this->testStoragePath . '/' . $expectedFilename;
 
         self::assertFileExists($expectedPath);
-        $fileContent = file_get_contents($expectedPath);
+        $fileContent = (string)file_get_contents($expectedPath);
         $decodedContent = json_decode($fileContent, true);
 
         self::assertSame($metadata, $decodedContent);
@@ -145,7 +145,7 @@ final class FileBackupStorageAdapterTest extends TestCase
 
         // Выполнение
         $adapter = new FileBackupStorageAdapter($newStoragePath);
-        $ticketsJson = json_encode(['id' => 1]);
+        $ticketsJson = (string)json_encode(['id' => 1]);
         $adapter->savePage($ticketsJson, '2025-01-15_103000', 1);
 
         // Проверка
@@ -174,8 +174,8 @@ final class FileBackupStorageAdapterTest extends TestCase
         // Подготовка
         $adapter = new FileBackupStorageAdapter($this->testStoragePath);
         $backupId = '2025-01-15_103000';
-        $oldJson = json_encode(['id' => 'old']);
-        $newJson = json_encode(['id' => 'new']);
+        $oldJson = (string)json_encode(['id' => 'old']);
+        $newJson = (string)json_encode(['id' => 'new']);
 
         // Выполнение - сначала сохраняем старые данные
         $adapter->savePage($oldJson, $backupId, 1);
@@ -209,7 +209,7 @@ final class FileBackupStorageAdapterTest extends TestCase
         $adapter = new FileBackupStorageAdapter($readOnlyPath);
 
         try {
-            $ticketsJson = json_encode(['id' => 1]);
+            $ticketsJson = (string)json_encode(['id' => 1]);
             $adapter->savePage($ticketsJson, '2025-01-15_103000', 1);
 
             // Если мы здесь - тест может быть пропущен (например, если разработчик использует sudo)
@@ -238,6 +238,7 @@ final class FileBackupStorageAdapterTest extends TestCase
         ];
 
         // Добавляем ресурс (который не может быть сериализован)
+        /** @var resource $resource */
         $resource = fopen('php://memory', 'r');
         $metadata['resource'] = $resource;
 

@@ -151,7 +151,9 @@ final readonly class FreshdeskHttpClientAdapter implements FreshdeskClientInterf
             }
         }
 
-        throw new FreshdeskApiConnectionException('Не удалось получить детальную информацию о задаче после всех попыток');
+        throw new FreshdeskApiConnectionException(
+            'Не удалось получить детальную информацию о задаче после всех попыток'
+        );
     }
 
     /**
@@ -170,7 +172,11 @@ final readonly class FreshdeskHttpClientAdapter implements FreshdeskClientInterf
 
             try {
                 $response = $this->httpClient->get(
-                    sprintf('https://%s.freshdesk.com/api/v2/tickets/%d/conversations', $this->freshdeskDomain, $ticketId),
+                    sprintf(
+                        'https://%s.freshdesk.com/api/v2/tickets/%d/conversations',
+                        $this->freshdeskDomain,
+                        $ticketId
+                    ),
                     [
                         'headers' => [
                             'Authorization' => 'Basic ' . base64_encode("{$this->freshdeskApiKey}:X"),
