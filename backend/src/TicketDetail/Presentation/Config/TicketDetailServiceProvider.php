@@ -34,12 +34,11 @@ final class TicketDetailServiceProvider extends ServiceProvider
         ));
 
         // Register new interfaces and implementations for --all functionality
-        $this->app->bind(
-            TicketListProviderInterface::class,
-            fn($app): TicketListProviderInterface => new BackupTicketListProviderAdapter(
-                config('backup.freshdesk.backup_storage_path')
-            )
-        );
+        $this->app->bind(TicketListProviderInterface::class, BackupTicketListProviderAdapter::class);
+
+        $this->app->when(BackupTicketListProviderAdapter::class)
+            ->needs('$backupStoragePath')
+            ->giveConfig('freshdesk.backup_storage_path');
 
         $this->app->bind(SaveAllTicketDetailsUseCase::class, SaveAllTicketDetailsUseCase::class);
     }

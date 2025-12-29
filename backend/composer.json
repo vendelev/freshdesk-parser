@@ -8,7 +8,8 @@
         "ext-pdo": "*",
         "guzzlehttp/guzzle": "^7.10",
         "laravel/framework": "^12.44.0",
-        "monolog/monolog": "^3.9"
+        "monolog/monolog": "^3.9",
+        "psr/log": "^3.0.2"
     },
     "require-dev": {
         "ext-posix": "*",
