@@ -15,13 +15,17 @@ graph TB
     
     subgraph "Application"
         UseCase[SaveTicketDetailUseCase]
+        UseCaseAll[SaveAllTicketDetailsUseCase]
     end
     
     subgraph "Domain"
         RepoInterface[TicketDetailRepositoryInterface]
         ClientInterface[FreshdeskDetailClientInterface]
+        ListProvider[TicketListProviderInterface]
         Response[SaveTicketDetailResponse]
         Metadata[TicketDetailMetadata]
+        ProcessedTicket[ProcessedTicket]
+        ProcessingSummary[ProcessingSummary]
         Exception1[TicketDetailNotFoundException]
         Exception2[TicketDetailSaveException]
     end
@@ -30,16 +34,22 @@ graph TB
         FileRepo[FileTicketDetailRepository]
         HttpClient[FreshdeskHttpDetailClientAdapter]
         BackupClient[FreshdeskHttpClientAdapter]
+        BackupListProvider[BackupTicketListProviderAdapter]
     end
     
     Console --> UseCase
+    Console --> UseCaseAll
     Provider --> UseCase
+    Provider --> UseCaseAll
     UseCase --> RepoInterface
     UseCase --> ClientInterface
+    UseCaseAll --> ListProvider
+    UseCaseAll --> UseCase
     FileRepo --> RepoInterface
     HttpClient --> ClientInterface
     HttpClient --> BackupClient
     BackupClient --> FreshdeskClientInterface
+    BackupListProvider --> ListProvider
 ```
 
 ### Структура директорий
@@ -48,20 +58,25 @@ graph TB
 TicketDetail/
 ├── Application/
 │   └── UseCase/
-│       └── SaveTicketDetailUseCase.php
+│       ├── SaveTicketDetailUseCase.php
+│       └── SaveAllTicketDetailsUseCase.php
 ├── Domain/
+│   ├── TicketListProviderInterface.php
 │   ├── FreshdeskDetailClientInterface.php
 │   ├── TicketDetailRepositoryInterface.php
 │   ├── Response/
 │   │   └── SaveTicketDetailResponse.php
 │   ├── ValueObject/
-│   │   └── TicketDetailMetadata.php
+│   │   ├── TicketDetailMetadata.php
+│   │   ├── ProcessedTicket.php
+│   │   └── ProcessingSummary.php
 │   └── Exception/
 │       ├── TicketDetailNotFoundException.php
 │       └── TicketDetailSaveException.php
 ├── Infrastructure/
 │   ├── Adapter/
-│   │   └── FreshdeskHttpDetailClientAdapter.php
+│   │   ├── FreshdeskHttpDetailClientAdapter.php
+│   │   └── BackupTicketListProviderAdapter.php
 │   └── Repository/
 │       └── FileTicketDetailRepository.php
 └── Presentation/
@@ -87,6 +102,10 @@ TicketDetail/
 
 **Примечание:** Данный интерфейс реализуется через адаптер к `FreshdeskClientInterface` из модуля Backup.
 
+#### `TicketListProviderInterface`
+Контракт для получения списка ID задач из бекапов:
+- `getTicketIds(): iterable` - возвращает итератор ID задач
+
 ### Value Objects
 
 #### `TicketDetailMetadata`
@@ -94,6 +113,22 @@ TicketDetail/
 - `savedAt`: DateTimeImmutable - дата и время сохранения
 - `status`: string - статус сохранения ('success'|'partial'|'failed')
 - `size`: int - размер файла в байтах
+
+#### `ProcessedTicket`
+Неизменяемый объект с результатом обработки одной задачи:
+- `ticketId`: int - ID задачи
+- `status`: string - статус обработки ('success'|'skipped'|'failed')
+- `filePath`: ?string - путь к файлу деталей
+- `errorMessage`: ?string - сообщение об ошибке
+
+#### `ProcessingSummary`
+Неизменяемый объект со сводкой обработки всех задач:
+- `totalTickets`: int - общее количество задач
+- `processed`: int - количество обработанных задач
+- `skipped`: int - количество пропущенных задач
+- `failed`: int - количество задач с ошибками
+- `startTime`: DateTimeImmutable - время начала обработки
+- `endTime`: ?DateTimeImmutable - время окончания обработки
 
 ### Response DTO
 
@@ -134,6 +169,28 @@ TicketDetail/
 - Не выбрасывает исключения на верхний уровень, обеспечивая устойчивость консольной команды
 - При существующем файле (без флага --force) возвращает успешный ответ с сообщением "Файл уже существует"
 
+### `SaveAllTicketDetailsUseCase`
+UseCase для координации процесса сохранения детальной информации для всех задач:
+
+**Зависимости:**
+- `TicketListProviderInterface` - для получения списка ID задач
+- `SaveTicketDetailUseCase` - для обработки каждой задачи
+- `LoggerInterface` (опционально) - для логирования
+
+**Методы:**
+- `execute(bool $forceOverwrite = false): ProcessingSummary`
+
+**Логика работы:**
+1. Получает список ID задач через `TicketListProviderInterface`
+2. Для каждой задачи вызывает `SaveTicketDetailUseCase::execute()`
+3. Собирает статистику обработки
+4. Возвращает сводку обработки
+
+**Обработка ошибок:**
+- При ошибках обработки отдельных задач продолжает обработку остальных
+- Логирует ошибки для каждой задачи отдельно
+- При ошибках получения списка задач возвращает сводку с ошибкой
+
 ## Документация API интерфейсов (Presentation)
 
 ### Консольная команда
@@ -147,7 +204,7 @@ php artisan backup:ticket-details [--ticket-id=ID] [--all] [--force]
 
 **Опции:**
 - `--ticket-id=ID` - ID конкретной задачи для сохранения
-- `--all` - Сохранить детальную информацию для всех задач (**пока не реализовано**)
+- `--all` - Сохранить детальную информацию для всех задач
 - `--force` - Принудительно перезаписать существующие файлы
 
 **Примеры использования:**
@@ -157,6 +214,12 @@ php artisan backup:ticket-details --ticket-id=123
 
 # Сохранить детальную информацию для задачи с ID 123, перезаписав существующий файл
 php artisan backup:ticket-details --ticket-id=123 --force
+
+# Сохранить детальную информацию для всех задач
+php artisan backup:ticket-details --all
+
+# Сохранить детальную информацию для всех задач, перезаписав существующие файлы
+php artisan backup:ticket-details --all --force
 
 # Показать справку
 php artisan backup:ticket-details --help
@@ -183,6 +246,16 @@ php artisan backup:ticket-details --help
    Файл: storage/backups/detail/123.json
    Сохранено: 2025-12-27 20:04:00
    Ошибка: Не удалось подключиться к Freshdesk API
+```
+
+**Вывод при обработке всех задач:**
+```
+Сводка обработки:
+  Всего задач: 150
+  Обработано: 145
+  Пропущено: 3
+  Ошибок: 2
+  Время выполнения: 00:02:30
 ```
 
 ## Интеграция с внешними системами (Infrastructure)
@@ -226,6 +299,25 @@ php artisan backup:ticket-details --help
 - **Пагинация:** 100 записей на страницу для conversations
 - **Обработка ошибок:** Специализированные исключения для разных типов ошибок
 
+### `BackupTicketListProviderAdapter`
+Адаптер для получения списка ID задач из бекапов:
+
+**Архитектурная роль:**
+- Реализует `TicketListProviderInterface` для совместимости с Domain слоем
+- Сканирует директорию бекапов для получения списка ID задач
+
+**Логика работы:**
+1. Сканирует директорию бекапов по паттерну `backup_*_page_*.json`
+2. Читает каждый файл бекапа
+3. Извлекает ID задач из JSON данных
+4. Возвращает уникальные ID задач через итератор
+
+**Особенности реализации:**
+- Обрабатывает только корректные JSON файлы
+- Пропускает поврежденные файлы
+- Возвращает каждый ID только один раз
+- Выбрасывает исключение при отсутствии директории бекапов
+
 ## Зависимости
 
 ### Внешние зависимости
@@ -253,19 +345,18 @@ FRESHDESK_DOMAIN=your_company_domain
 return [
     'api_key' => env('FRESHDESK_API_KEY'),
     'domain' => env('FRESHDESK_DOMAIN'),
+    'backup_storage_path' => env('FRESHDESK_BACKUP_STORAGE_PATH', storage_path('backups')),
 ];
 ```
 
 ## Тестирование модуля
 
-**Статус тестов:** Тесты для модуля TicketDetail еще не реализованы.
-
-**Планируемая структура тестов:**
+**Структура тестов:**
 - **Application тесты**: `backend/tests/Suite/TicketDetail/Application/`
 - **Infrastructure тесты**: `backend/tests/Suite/TicketDetail/Infrastructure/`
 - **Presentation тесты**: `backend/tests/Suite/TicketDetail/Presentation/`
 
-### Основные сценарии тестирования (планируемые)
+### Основные сценарии тестирования
 
 1. **Успешное сохранение детальной информации**
    - Проверка корректного сохранения JSON данных
@@ -286,6 +377,11 @@ return [
    - Валидация аргументов и опций
    - Проверка вывода в консоль
 
+5. **Обработка всех задач**
+   - Проверка корректного сканирования бекапов
+   - Проверка обработки всех задач
+   - Проверка статистики обработки
+
 ## Сценарии использования
 
 ### Сценарий 1: Сохранение детальной информации для одной задачи
@@ -301,7 +397,19 @@ return [
    - Возвращает результат с информацией о сохранении
 4. Система выводит статус выполнения в консоль
 
-### Сценарий 2: Обработка ошибок API
+### Сценарий 2: Сохранение детальной информации для всех задач
+
+1. Пользователь выполняет команду `php artisan backup:ticket-details --all`
+2. Система сканирует директорию бекапов через `TicketListProviderInterface`
+3. Система получает список всех ID задач из бекапов
+4. Для каждой задачи система:
+   - Проверяет существование файла `storage/backups/detail/{id}.json`
+   - Если файл не существует или указан флаг `--force`, получает и сохраняет детали
+   - Если файл существует и не указан флаг `--force`, пропускает задачу
+5. Система собирает статистику обработки
+6. Система выводит сводку обработки в консоль
+
+### Сценарий 3: Обработка ошибок API
 
 1. **При rate limit (429):**
    - Система выполняет retry с экспоненциальным backoff (1с, 2с, 4с)
@@ -320,7 +428,7 @@ return [
    - Сохраняются доступные данные (основная информация задачи)
    - В ответе статус остается 'success' (так как основные данные сохранены)
 
-### Сценарий 3: Проверка существования файла
+### Сценарий 4: Проверка существования файла
 
 1. Пользователь выполняет команду для задачи, файл которой уже существует
 2. Система проверяет существование файла через `repository->exists()`
@@ -329,7 +437,7 @@ return [
    - В поле `errorMessage` указывает "Файл уже существует"
 4. В консоль выводится сообщение об успешном сохранении с информацией о существующем файле
 
-### Сценарий 4: Обработка пагинации conversations
+### Сценарий 5: Обработка пагинации conversations
 
 1. При получении детальной информации о задаче с большим количеством переписки
 2. Система проверяет наличие поля `conversations` в основном ответе
@@ -384,17 +492,11 @@ API ключ Freshdesk хранится в переменных окружени
 }
 ```
 
-### Ограничения текущей реализации
-- **Опция --all не реализована:** В настоящее время команда поддерживает только сохранение одной задачи по ID
-- **Отсутствуют тесты:** Модуль не покрыт автоматизированными тестами
-- **Отсутствует интеграция со списком задач:** Не использует данные из Backup модуля для получения списка задач
-
 ## Развитие модуля
 
 ### Планируемые улучшения
-1. Реализация опции `--all` для сохранения всех задач
-2. Создание автоматизированных тестов (Unit, Integration, E2E)
-3. Добавление прогресс-бара для длительных операций
-4. Интеграция с очередями для асинхронной обработки
-5. Возможность скачивания вложений (attachments)
-6. Валидация целостности сохраненных данных
+1. Создание автоматизированных тестов (Unit, Integration, E2E)
+2. Добавление прогресс-бара для длительных операций
+3. Интеграция с очередями для асинхронной обработки
+4. Возможность скачивания вложений (attachments)
+5. Валидация целостности сохраненных данных
