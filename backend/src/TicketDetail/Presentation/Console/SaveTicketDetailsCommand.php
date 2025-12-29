@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Parser\TicketDetail\Presentation\Console;
 
 use Illuminate\Console\Command;
+use Parser\TicketDetail\Application\UseCase\SaveAllTicketDetailsUseCase;
 use Parser\TicketDetail\Application\UseCase\SaveTicketDetailUseCase;
+use Parser\TicketDetail\Domain\Response\SaveTicketDetailResponse;
+use Parser\TicketDetail\Domain\ValueObject\ProcessingSummary;
 
 final class SaveTicketDetailsCommand extends Command
 {
@@ -27,7 +30,8 @@ final class SaveTicketDetailsCommand extends Command
     protected $description = 'Сохранить детальную информацию задач из Freshdesk API';
 
     public function __construct(
-        private readonly SaveTicketDetailUseCase $useCase,
+        private readonly SaveTicketDetailUseCase $saveTicketDetailUseCase,
+        private readonly SaveAllTicketDetailsUseCase $saveAllTicketDetailsUseCase,
     ) {
         parent::__construct();
     }
@@ -54,16 +58,19 @@ final class SaveTicketDetailsCommand extends Command
         try {
             if ($ticketId !== null) {
                 // Сохранить одну задачу
-                $response = $this->useCase->execute((int) $ticketId, $force);
+                $response = $this->saveTicketDetailUseCase->execute((int) $ticketId, $force);
 
                 $this->displayResult($response);
 
                 return $response->status === 'success' ? self::SUCCESS : self::FAILURE;
             }
 
-            // Сохранить все задачи - пока заглушка, нужно получить список из Backup модуля
-            $this->info('Функциональность --all пока не реализована. Используйте --ticket-id для конкретной задачи.');
-            return self::FAILURE;
+            // Сохранить все задачи
+            $summary = $this->saveAllTicketDetailsUseCase->execute($force);
+            $this->displaySummary($summary);
+
+            // Вернуть успех если обработано хотя бы одной задачи успешно или пропущено
+            return $summary->processed > 0 || $summary->skipped > 0 ? self::SUCCESS : self::FAILURE;
         } catch (\Throwable $e) {
             $this->error('Произошла ошибка: ' . $e->getMessage());
             return self::FAILURE;
@@ -73,9 +80,9 @@ final class SaveTicketDetailsCommand extends Command
     /**
      * Отобразить результат выполнения
      *
-     * @param \Parser\TicketDetail\Domain\Response\SaveTicketDetailResponse $response Результат
+     * @param SaveTicketDetailResponse $response Результат
      */
-    private function displayResult(\Parser\TicketDetail\Domain\Response\SaveTicketDetailResponse $response): void
+    private function displayResult(SaveTicketDetailResponse $response): void
     {
         $statusIcon = match ($response->status) {
             'success' => '✅',
@@ -97,5 +104,29 @@ final class SaveTicketDetailsCommand extends Command
         if ($response->errorMessage !== null) {
             $this->line(sprintf('   Ошибка: %s', $response->errorMessage));
         }
+    }
+
+    /**
+     * Отобразить сводку выполнения
+     *
+     * @param ProcessingSummary $summary Сводка
+     */
+    private function displaySummary(ProcessingSummary $summary): void
+    {
+        $this->line('');
+        $this->line('Сводка обработки:');
+        $this->line(sprintf('  Всего задач: %d', $summary->totalTickets));
+        $this->line(sprintf('  Обработано: %d', $summary->processed));
+        $this->line(sprintf('  Пропущено: %d', $summary->skipped));
+        $this->line(sprintf('  Ошибок: %d', $summary->failed));
+
+        $dateTime = 'Не завершено';
+
+        if ($summary->endTime instanceof \DateTimeImmutable) {
+            $dateTime = $summary->startTime->diff($summary->endTime)->format('%H:%I:%S');
+        }
+
+        $this->line(sprintf('  Время выполнения: %s', $dateTime));
+        $this->line('');
     }
 }
