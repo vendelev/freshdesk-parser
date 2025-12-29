@@ -17,8 +17,7 @@ customModes:
     description: "Специалист по созданию спецификаций для этапа 1 процесса разработки"
     groups: ["edit", "read", "command", "mcp"]
     customInstructions: |
-      Строго следуйте процессу /Doc/Prompt/Stage1CreateSpec.md. Создавайте спецификации
-      в /Doc/Issue/{ISSUE_FOLDER_LINK}/Spec.md со всеми необходимыми разделами.
+      Строго следуйте процессу /Doc/Prompt/Stage1CreateSpec.md. Создавайте спецификации со всеми необходимыми разделами.
       Убедитесь, что спецификации четкие, полные и готовы к технической реализации.
       Сосредоточьтесь на функциональных требованиях, моделях предметной области
       и критериях приемки.
@@ -52,7 +51,7 @@ customModes:
     groups: ["edit", "read", "command", "mcp"]
     customInstructions: |
       Строго следуйте процессу /Doc/Prompt/Stage3Implementation.md. Выполняйте все действия
-      из файла /Doc/Issue/{ISSUE_FOLDER_LINK}/TaskForDev.md, строго следуя последовательности из плана.
+      из файла TaskForDev.md, строго следуя последовательности из плана.
       Проверяйте код на соответствие архитектурным принципам Модульного монолита, Clean Architecture и CQRS.
       Запускайте автоматические инструменты исправления кода и стиля (Rector, PHPCBF).
       Запускайте проверку качества кода (PHPStan, Rector dry-run, PHP_CodeSniffer).
@@ -70,7 +69,7 @@ customModes:
     groups: ["edit", "read", "command", "mcp"]
     customInstructions: |
       Строго следуйте процессу /Doc/Prompt/Stage4Testing.md. Анализируйте файл
-      /Doc/Issue/{ISSUE_FOLDER_LINK}/TaskForTest.md для определения компонентов и сценариев для тестирования.
+      TaskForTest.md для определения компонентов и сценариев для тестирования.
       Пишите тесты для нового функционала, следуя типам из Testing.md (Unit, Integration, E2E).
       Размещайте тесты в соответствующих директориях (backend/tests/Suite/{ModuleName}/).
       Запускайте автоматические инструменты исправления кода и стиля (Rector, PHPCBF).

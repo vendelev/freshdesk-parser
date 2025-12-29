@@ -8,28 +8,27 @@
 
 ## Входные параметры (Пользовательский ввод)
 
-- `{ISSUE_FOLDER_LINK}` - название папки с задачей (например, `FD-123_Add-User-Registration`). Если параметр не передан, запросите его у пользователя. 
-    Этот параметр обычно берется из предыдущих этапов или из названия папки в `Doc/Issue/`.
+{YYYY}/{MM}/{ISSUE_FOLDER_LINK} - год/месяц/название папки. Если параметр не передан, его надо запросить у пользователя.
 
 ## Что надо сделать
 
 Внимательно изучи:
 - Информацию о проекте в [`ProjectInfo.md`](../ProjectInfo.md)
-- Новые бизнес-требования в [`Spec.md`](../Issue/{ISSUE_FOLDER_LINK}/Spec.md)
-- План реализации в [TaskForDev.md](../Issue/{ISSUE_FOLDER_LINK}/TaskForDev.md)
-- План тестирования в [TaskForTest.md](../Issue/{ISSUE_FOLDER_LINK}/TaskForTest.md)
+- Новые бизнес-требования в [`Spec.md`](../Issue/{YYYY}/{MM}/{ISSUE_FOLDER_LINK}/Spec.md)
+- План реализации в [TaskForDev.md](../Issue/{YYYY}/{MM}/{ISSUE_FOLDER_LINK}/TaskForDev.md)
+- План тестирования в [TaskForTest.md](../Issue/{YYYY}/{MM}/{ISSUE_FOLDER_LINK}/TaskForTest.md)
 
 Создайте новый файл `/backend/src/{MODULE_FOLDER_LINK}/Readme.md` с подробной технической документацией для реализованного модуля.
 Если файл уже существует его надо актуализировать.
 
 ### Определение {MODULE_FOLDER_LINK}
 
-- Извлеките название модуля из контекста [TaskForDev.md](../Issue/{ISSUE_FOLDER_LINK}/TaskForDev.md). Ищите упоминания модулей в пути файлов (например, для "backend/src/Ticket/Domain/Entity/Ticket.php" - это "Ticket").
+- Извлеките название модуля из контекста [TaskForDev.md](../Issue/{YYYY}/{MM}/{ISSUE_FOLDER_LINK}/TaskForDev.md). Ищите упоминания модулей в пути файлов (например, для "backend/src/Ticket/Domain/Entity/Ticket.php" - это "Ticket").
 - Если затронуто несколько модулей, создайте файлы `Readme.md` для каждого.
 - Если изменения касаются Core (общепроектного кода), создайте или обновите [`Readme.md`](/backend/src/Core/Readme.md).
 
 **ВАЖНО**
-Обязательно следует прочитать все созданные и измененные файлы в модуле, так как есть вероятность, что реализация отличается от [TaskForDev.md](../Issue/{ISSUE_FOLDER_LINK}/TaskForDev.md) и [TaskForTest.md](../Issue/{ISSUE_FOLDER_LINK}/TaskForTest.md)
+Обязательно следует прочитать все созданные и измененные файлы в модуле, так как есть вероятность, что реализация отличается от [TaskForDev.md](../Issue/{YYYY}/{MM}/{ISSUE_FOLDER_LINK}/TaskForDev.md) и [TaskForTest.md](../Issue/{YYYY}/{MM}/{ISSUE_FOLDER_LINK}/TaskForTest.md)
 В Readme.md следует описывать реальную реализацию. 
 
 Описание должно быть подробное, но без лишних технических подробностей.
@@ -83,7 +82,7 @@
 
 #### 9. Сценарии использования
 
-- Опишите сценарии использования модуля в приложении из файла [Spec.md](../Issue/{ISSUE_FOLDER_LINK}/Spec.md).
+- Опишите сценарии использования модуля в приложении из файла [Spec.md](../Issue/{YYYY}/{MM}/{ISSUE_FOLDER_LINK}/Spec.md).
 
 ## Критерии завершения этапа
 
@@ -92,7 +91,7 @@
 - Все разделы шаблона заполнены актуальной информацией о модуле
 - При наличии внешних API созданы файлы документации в `/backend/src/{MODULE_FOLDER_LINK}/Domain/Doc`
 - Указаны зависимости модуля от других модулей и внешних библиотек
-- Описаны сценарии использования модуля из файла [Spec.md](../Issue/{ISSUE_FOLDER_LINK}/Spec.md)
+- Описаны сценарии использования модуля из файла [Spec.md](../Issue/{YYYY}/{MM}/{ISSUE_FOLDER_LINK}/Spec.md)
 - Файл отформатирован в соответствии с правилами https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md
 
 ## Ревью пользователем тестов
