@@ -154,23 +154,6 @@ backend/tests/
 - Команда завершается успешно (если ошибок не слишком много)
 - Вывод содержит информацию о количестве ошибок
 
-## Чек-лист выполнения
-
-### Команды для запуска тестов:
-```bash
-# Запуск всех тестов модуля TicketDetail
-make php-run CMD="php artisan test --filter=TicketDetail"
-
-# Запуск функциональных тестов Application слоя
-make php-run CMD="php artisan test tests/Suite/TicketDetail/Application"
-
-# Запуск integration тестов Infrastructure слоя
-make php-run CMD="php artisan test tests/Suite/TicketDetail/Infrastructure"
-
-# Запуск E2E тестов Presentation слоя
-make php-run CMD="php artisan test tests/Suite/TicketDetail/Presentation"
-```
-
 ## Критерии приемки
 
 ### CA1: Корректная обработка всех задач
