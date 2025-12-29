@@ -120,6 +120,7 @@
 - ✅ Архитектура соответствует Clean Architecture, CQRS, Модульному монолиту
 - ✅ Учтены правила [Architecture.md](../Rule/Architecture.md) и [CodeHints.md](../Rule/CodeHints.md)
 - ✅ Документы готовы для использования разными AI-агентами на разных этапах
+- ✅ Файл отформатирован в соответствии с правилами https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md
 
 ## Ревью пользователем описания последовательности действий
 

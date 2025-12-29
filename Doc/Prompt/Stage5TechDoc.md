@@ -93,6 +93,7 @@
 - При наличии внешних API созданы файлы документации в `/backend/src/{MODULE_FOLDER_LINK}/Domain/Doc`
 - Указаны зависимости модуля от других модулей и внешних библиотек
 - Описаны сценарии использования модуля из файла [Spec.md](../Issue/{ISSUE_FOLDER_LINK}/Spec.md)
+- Файл отформатирован в соответствии с правилами https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md
 
 ## Ревью пользователем тестов
 
