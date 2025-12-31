@@ -1,4 +1,10 @@
 services:
+  qdrant:
+    image: qdrant/qdrant
+    volumes:
+      - ./docker/qdrant/storage:/qdrant/storage
+    ports:
+      - "6333:6333"
   php-dev:
     container_name: ${COMPOSE_PROJECT_NAME}-php
     restart: unless-stopped
